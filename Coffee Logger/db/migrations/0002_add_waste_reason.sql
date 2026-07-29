@@ -1,0 +1,1 @@
+ALTER TABLE waste ADD COLUMN IF NOT EXISTS reason varchar(50);
