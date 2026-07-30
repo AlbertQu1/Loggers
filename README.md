@@ -12,9 +12,11 @@ Mobile-first PWA for logging coffee consumption: cups prepared, coffee bags, was
 
 **Stack:** Next.js (App Router) · React · TypeScript · Tailwind CSS · PostgreSQL
 
-### 🥤 Soda Stream Logger
+### 🥤 [Soda Stream Logger](./Soda%20Stream%20Logger)
 
-Coming soon.
+Mobile-first PWA for logging soda-carbonation usage: pour intensity, flavor syrups, and CO2 tank tracking with a single "change tank" action. Smaller sibling of Coffee Logger — same architecture, scoped to just the essentials.
+
+**Stack:** Next.js (App Router) · React · TypeScript · Tailwind CSS · PostgreSQL
 
 ## Why this exists
 
