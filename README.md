@@ -1,6 +1,6 @@
 # Loggers
 
-A collection of personal home-appliance tracking apps — small, focused PWAs for logging day-to-day usage of things around the house, backed by Postgres and built for real-world use (not just demos).
+A collection of small, focused personal PWAs — mostly for logging day-to-day usage of things around the house, plus a couple of consumption clients for other backend projects — backed by Postgres and built for real-world use (not just demos).
 
 Each app lives in its own folder with its own README, stack, and database.
 
@@ -15,6 +15,12 @@ Mobile-first PWA for logging coffee consumption: cups prepared, coffee bags, was
 ### 🥤 Soda Stream Logger
 
 Coming soon.
+
+### 🎲 [Boardgames Assistant](./Boardgames%20Assistant)
+
+Mobile-first PWA for asking board game rules in natural language — a chat client for the [boardgames-assistant](https://github.com/AlbertQu1/boardgames-assistant) RAG backend (PDF/DOCX rulebooks → pgvector → Gemini). Second tab reserved for BG Stats (play analytics), not built yet.
+
+**Stack:** Next.js (App Router) · React · TypeScript · Tailwind CSS · Python/FastAPI backend
 
 ## Why this exists
 
