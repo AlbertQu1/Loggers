@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Search, Upload, Loader2, FileText, X, Trash2, Eye } from 'lucide-react'
-import { Juego } from '@/types'
-import { getJuegos } from '@/services/api/ask'
+import { getJuegosCatalogo } from '@/services/api/ask'
 import {
   bggLookup,
   subirReglamento,
@@ -13,10 +12,10 @@ import {
   urlVerPendiente,
 } from '@/services/api/reglamentos'
 import { showToast } from '@/components/common/toast-notifications'
-import { JuegoSelector } from '../preguntar/juego-selector'
+import { JuegoCatalogoSelector } from './juego-catalogo-selector'
 
 export function AgregarScreen() {
-  const [juegos, setJuegos] = useState<Juego[]>([])
+  const [catalogo, setCatalogo] = useState<string[]>([])
   const [pendientes, setPendientes] = useState<string[]>([])
   const [pendienteActivo, setPendienteActivo] = useState<string | null>(null)
 
@@ -32,7 +31,7 @@ export function AgregarScreen() {
   const [subiendo, setSubiendo] = useState(false)
 
   function cargarJuegos() {
-    getJuegos().then(setJuegos).catch(() => showToast('No se pudo cargar la lista de juegos', 'error'))
+    getJuegosCatalogo().then(setCatalogo).catch(() => showToast('No se pudo cargar tu biblioteca de BG Stats', 'error'))
   }
 
   function cargarPendientes() {
@@ -212,13 +211,10 @@ export function AgregarScreen() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
           <label className="text-sm font-medium">Juego</label>
-          <input
-            value={juego}
-            onChange={(e) => setJuego(e.target.value)}
-            required
-            placeholder="Nombre exacto de BGG"
-            className="mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+          <p className="text-xs text-muted-foreground mb-1">
+            Busca en tu biblioteca para evitar nombres distintos al mismo juego.
+          </p>
+          <JuegoCatalogoSelector catalogo={catalogo} value={juego} onChange={setJuego} />
         </div>
 
         <div className="flex gap-3">
@@ -251,7 +247,7 @@ export function AgregarScreen() {
         <div>
           <label className="text-sm font-medium">Es expansion de... (opcional)</label>
           <div className="mt-1">
-            <JuegoSelector juegos={juegos} value={juegoBase} onChange={setJuegoBase} />
+            <JuegoCatalogoSelector catalogo={catalogo} value={juegoBase} onChange={setJuegoBase} />
           </div>
         </div>
 
