@@ -42,3 +42,13 @@ export async function getJuegos(): Promise<Juego[]> {
 
   return response.json()
 }
+
+export async function getJuegosCatalogo(): Promise<string[]> {
+  const response = await fetchWithTimeout(`${API_BASE_URL}/juegos/catalogo`, {}, 10000)
+
+  if (!response.ok) {
+    throw new Error(`No se pudo obtener el catalogo de juegos (${response.status})`)
+  }
+
+  return response.json()
+}
