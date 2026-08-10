@@ -9,7 +9,7 @@ function isFromTailscale(ip: string): boolean {
   return parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isApi = pathname.startsWith('/api/cups')
   const isPage = pathname.startsWith('/new-cup')
