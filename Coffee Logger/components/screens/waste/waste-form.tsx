@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { CoffeeBag, MaintenanceType } from '@/types'
-import { registerWaste } from '@/services/api/waste'
+import { registerWaste, getRecentWaste, RecentWasteEvent } from '@/services/api/waste'
 import { getBags } from '@/services/api/bags'
 import {
   registerMaintenance,
@@ -22,6 +22,8 @@ export function WasteForm() {
   // Maintenance alert banner (shown regardless of mode)
   const [needsClean, setNeedsClean] = useState(false)
   const [needsDescale, setNeedsDescale] = useState(false)
+  const [lastCleanDate, setLastCleanDate] = useState<string | null>(null)
+  const [lastDescaleDate, setLastDescaleDate] = useState<string | null>(null)
 
   // Waste form state
   const [bags, setBags] = useState<CoffeeBag[]>([])
@@ -31,6 +33,15 @@ export function WasteForm() {
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingBags, setIsLoadingBags] = useState(true)
+  const [recentWaste, setRecentWaste] = useState<RecentWasteEvent[]>([])
+
+  const loadRecentWaste = async () => {
+    try {
+      setRecentWaste(await getRecentWaste())
+    } catch (error) {
+      console.error('Failed to load recent waste:', error)
+    }
+  }
 
   // Maintenance form state
   const [maintenanceType, setMaintenanceType] = useState<MaintenanceType>('CLEAN')
@@ -69,6 +80,8 @@ export function WasteForm() {
       const status = await getMaintenanceStatus()
       setNeedsClean(status.needsClean)
       setNeedsDescale(status.needsDescale)
+      setLastCleanDate(status.lastCleanDate)
+      setLastDescaleDate(status.lastDescaleDate)
     } catch (error) {
       console.error('Failed to load maintenance status:', error)
     }
@@ -98,6 +111,7 @@ export function WasteForm() {
     loadBags()
     loadMaintenanceStatus()
     loadBenchmarkAverage()
+    loadRecentWaste()
     getPurchaseLocations()
       .then(setBenchmarkCityOptions)
       .catch((error) => console.error('Failed to load purchase locations:', error))
@@ -128,6 +142,7 @@ export function WasteForm() {
       })
 
       showToast('Waste recorded.', 'success')
+      await loadRecentWaste()
 
       // Reset form
       if (activeBag) {
@@ -312,6 +327,42 @@ export function WasteForm() {
             </Button>
           </form>
         )
+      )}
+
+      {mode === 'waste' && recentWaste.length > 0 && (
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Recent Waste
+          </label>
+          {recentWaste.map((event, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between px-4 py-3 rounded-xl bg-secondary text-sm"
+            >
+              <div>
+                <p className="font-medium">{event.coffeeName}</p>
+                <p className="text-muted-foreground text-xs">
+                  {event.date}
+                  {event.reason ? ` · ${event.reason}` : ''}
+                </p>
+              </div>
+              <p className="font-semibold">{event.grams}g</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {mode === 'maintenance' && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-secondary rounded-2xl p-4 text-center">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Last Clean</p>
+            <p className="text-lg font-bold">{lastCleanDate || 'Never'}</p>
+          </div>
+          <div className="bg-secondary rounded-2xl p-4 text-center">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Last Descale</p>
+            <p className="text-lg font-bold">{lastDescaleDate || 'Never'}</p>
+          </div>
+        </div>
       )}
 
       {mode === 'maintenance' && (

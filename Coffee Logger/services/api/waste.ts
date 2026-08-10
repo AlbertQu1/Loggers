@@ -26,6 +26,24 @@ export interface CreateWastePayload {
   notes?: string
 }
 
+export interface RecentWasteEvent {
+  date: string
+  coffeeName: string
+  grams: number
+  reason?: string
+}
+
+export async function getRecentWaste(): Promise<RecentWasteEvent[]> {
+  const response = await fetchWithTimeout(`${API_BASE_URL}/waste`)
+  const data: ApiResponse<RecentWasteEvent[]> = await response.json()
+
+  if (!data.success || !data.data) {
+    throw new Error(data.error || 'Failed to fetch waste history')
+  }
+
+  return data.data
+}
+
 export async function registerWaste(payload: CreateWastePayload): Promise<WasteEntry> {
   const response = await fetchWithTimeout(`${API_BASE_URL}/waste`, {
     method: 'POST',

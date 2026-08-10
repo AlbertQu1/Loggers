@@ -119,16 +119,19 @@ export async function GET(request: NextRequest) {
       }
 
       {
-        const conditions: string[] = []
+        const conditions: string[] = ["pl.name <> 'Anual'"]
         const values: any[] = []
         let i = 1
         if (bagId) {
-          conditions.push(`id = $${i++}`)
+          conditions.push(`cb.id = $${i++}`)
           values.push(bagId)
         }
-        const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
+        const where = `WHERE ${conditions.join(' AND ')}`
         const { rows } = await pool.query(
-          `SELECT id, coffee_name, opened_date, closed_date FROM coffee_bags ${where}`,
+          `SELECT cb.id, cb.coffee_name, cb.opened_date, cb.closed_date
+           FROM coffee_bags cb
+           JOIN purchase_locations pl ON pl.id = cb.purchase_location_id
+           ${where}`,
           values
         )
 
