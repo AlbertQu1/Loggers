@@ -18,9 +18,9 @@ export async function POST(request: NextRequest) {
       flavors,
     } = body
 
-    if (!size || !activeBagId) {
+    if (!size) {
       return NextResponse.json(
-        { success: false, error: 'Missing size or bag' },
+        { success: false, error: 'Missing size' },
         { status: 400 }
       )
     }
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
-        activeBagId,
+        activeBagId || null,
         cupSizeId,
         cups_prepared || 1,
         !!withMilk,
