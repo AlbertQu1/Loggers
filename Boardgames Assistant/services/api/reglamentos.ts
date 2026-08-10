@@ -58,6 +58,19 @@ export async function descartarPendiente(archivoNombre: string): Promise<void> {
   }
 }
 
+export interface JuegoFaltante {
+  juego: string
+  es_propio: boolean
+  partidas: number
+  ultima_partida: string | null
+}
+
+export async function getJuegosFaltantes(): Promise<JuegoFaltante[]> {
+  const response = await fetch(`${API_BASE_URL}/juegos/faltantes`)
+  if (!response.ok) throw new Error(`No se pudo cargar la lista de manuales faltantes (${response.status})`)
+  return response.json()
+}
+
 export interface ConfirmarReglamentoParams {
   archivoNombre: string
   juego: string
