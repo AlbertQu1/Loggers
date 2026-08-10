@@ -48,6 +48,10 @@ export async function getPendientes(): Promise<string[]> {
   return response.json()
 }
 
+export function urlVerPendiente(archivoNombre: string): string {
+  return `${API_BASE_URL}/reglamentos/pendientes/${encodeURIComponent(archivoNombre)}/archivo`
+}
+
 export async function descartarPendiente(archivoNombre: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/reglamentos/pendientes/${encodeURIComponent(archivoNombre)}`, {
     method: 'DELETE',

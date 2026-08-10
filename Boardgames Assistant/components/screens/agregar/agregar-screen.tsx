@@ -1,10 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, Upload, Loader2, FileText, X, Trash2 } from 'lucide-react'
+import { Search, Upload, Loader2, FileText, X, Trash2, Eye } from 'lucide-react'
 import { Juego } from '@/types'
 import { getJuegos } from '@/services/api/ask'
-import { bggLookup, subirReglamento, getPendientes, confirmarReglamento, descartarPendiente } from '@/services/api/reglamentos'
+import {
+  bggLookup,
+  subirReglamento,
+  getPendientes,
+  confirmarReglamento,
+  descartarPendiente,
+  urlVerPendiente,
+} from '@/services/api/reglamentos'
 import { showToast } from '@/components/common/toast-notifications'
 import { JuegoSelector } from '../preguntar/juego-selector'
 
@@ -42,6 +49,18 @@ export function AgregarScreen() {
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'No se pudo descartar', 'error')
     }
+  }
+
+  function handleVerPendiente(nombre: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    window.open(urlVerPendiente(nombre), '_blank')
+  }
+
+  function handleVerArchivoLocal() {
+    if (!archivo) return
+    const url = URL.createObjectURL(archivo)
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
 
   useEffect(() => {
@@ -135,6 +154,14 @@ export function AgregarScreen() {
                 >
                   <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
                   <span className="truncate">{nombre}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleVerPendiente(nombre, e)}
+                  className="px-2 py-2 text-muted-foreground hover:text-primary shrink-0"
+                  aria-label="Ver archivo"
+                >
+                  <Eye className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
@@ -234,6 +261,13 @@ export function AgregarScreen() {
             <div className="mt-1 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
               <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
               <span className="flex-1 truncate">{pendienteActivo}</span>
+              <button
+                type="button"
+                onClick={() => window.open(urlVerPendiente(pendienteActivo), '_blank')}
+                aria-label="Ver archivo"
+              >
+                <Eye className="w-4 h-4 text-muted-foreground" />
+              </button>
               <button type="button" onClick={() => setPendienteActivo(null)} aria-label="Quitar">
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
@@ -242,12 +276,24 @@ export function AgregarScreen() {
         ) : (
           <div>
             <label className="text-sm font-medium">Archivo (PDF o DOCX)</label>
-            <input
-              type="file"
-              accept=".pdf,.docx"
-              onChange={(e) => setArchivo(e.target.files?.[0] || null)}
-              className="mt-1 w-full text-sm"
-            />
+            <div className="mt-1 flex items-center gap-2">
+              <input
+                type="file"
+                accept=".pdf,.docx"
+                onChange={(e) => setArchivo(e.target.files?.[0] || null)}
+                className="flex-1 text-sm"
+              />
+              {archivo && (
+                <button
+                  type="button"
+                  onClick={handleVerArchivoLocal}
+                  className="p-2 text-muted-foreground hover:text-primary shrink-0"
+                  aria-label="Ver archivo"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         )}
 
