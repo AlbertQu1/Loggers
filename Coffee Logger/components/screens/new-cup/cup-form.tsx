@@ -32,6 +32,7 @@ export function CupForm() {
   const [withMilk, setWithMilk] = useState(false)
   const [cold, setCold] = useState(false)
   const [useGroundCoffee, setUseGroundCoffee] = useState(false)
+  const [noCoffee, setNoCoffee] = useState(false)
   const [multipleCups, setMultipleCups] = useState(false)
   const [containsAlcohol, setContainsAlcohol] = useState(false)
   const [selectedAlcohols, setSelectedAlcohols] = useState<Set<string>>(new Set())
@@ -87,8 +88,9 @@ export function CupForm() {
         flavors[flavors.indexOf('Other')] = customFlavorName
       }
 
-      // Determine if we're using ground coffee
-      const isUsingGroundCoffee = useGroundCoffee || !activeBag
+      // Determine if we're using ground coffee (skipped entirely for
+      // no-coffee preparations, which have no bag at all)
+      const isUsingGroundCoffee = !noCoffee && (useGroundCoffee || !activeBag)
 
       // If using ground coffee, get or create the annual virtual bag
       let groundCoffeeBagId: string | undefined = undefined
@@ -110,7 +112,7 @@ export function CupForm() {
         cold,
         withMilk,
         useGroundCoffee: isUsingGroundCoffee,
-        activeBagId: isUsingGroundCoffee ? groundCoffeeBagId : activeBag?.id,
+        activeBagId: noCoffee ? undefined : isUsingGroundCoffee ? groundCoffeeBagId : activeBag?.id,
         contains_alcohol: containsAlcohol,
         alcohol_types: containsAlcohol ? alcoholTypes : undefined,
         contains_flavor: containsFlavor,
@@ -127,6 +129,7 @@ export function CupForm() {
       setCold(false)
       setWithMilk(false)
       setUseGroundCoffee(false)
+      setNoCoffee(false)
       setMultipleCups(false)
       setContainsAlcohol(false)
       setSelectedAlcohols(new Set())
@@ -147,7 +150,7 @@ export function CupForm() {
           flavors[flavors.indexOf('Other')] = customFlavorName
         }
 
-        const isUsingGroundCoffee = useGroundCoffee || !activeBag
+        const isUsingGroundCoffee = !noCoffee && (useGroundCoffee || !activeBag)
         let groundCoffeeBagId: string | undefined = undefined
 
         // Try to get ground coffee bag for offline sync
@@ -166,7 +169,7 @@ export function CupForm() {
           cold,
           withMilk,
           useGroundCoffee: isUsingGroundCoffee,
-          activeBagId: isUsingGroundCoffee ? groundCoffeeBagId : activeBag?.id,
+          activeBagId: noCoffee ? undefined : isUsingGroundCoffee ? groundCoffeeBagId : activeBag?.id,
           contains_alcohol: containsAlcohol,
           alcohol_types: containsAlcohol ? alcoholTypes : undefined,
           contains_flavor: containsFlavor,
@@ -181,6 +184,7 @@ export function CupForm() {
         setCold(false)
         setWithMilk(false)
         setUseGroundCoffee(false)
+        setNoCoffee(false)
         setMultipleCups(false)
         setContainsAlcohol(false)
         setSelectedAlcohols(new Set())
@@ -213,7 +217,7 @@ export function CupForm() {
       )}
 
       {/* No Active Bag Message */}
-      {!activeBag && (
+      {!activeBag && !noCoffee && (
         <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 space-y-4">
           <p className="text-sm text-amber-900 dark:text-amber-50">
             No coffee bag is currently loaded.
@@ -280,7 +284,7 @@ export function CupForm() {
             Cold Coffee
           </button>
 
-          {activeBag && (
+          {activeBag && !noCoffee && (
             <button
               onClick={() => setUseGroundCoffee(!useGroundCoffee)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
@@ -302,6 +306,17 @@ export function CupForm() {
             }`}
           >
             Cocktail
+          </button>
+
+          <button
+            onClick={() => setNoCoffee(!noCoffee)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              noCoffee
+                ? 'bg-foreground text-background'
+                : 'bg-secondary text-foreground border border-border hover:bg-secondary/80'
+            }`}
+          >
+            No Coffee
           </button>
 
           <button
