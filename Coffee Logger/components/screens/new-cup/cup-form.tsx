@@ -266,26 +266,29 @@ export function CupForm() {
         </h2>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => setWithMilk(!withMilk)}
+            onClick={() => !noCoffee && setWithMilk(!withMilk)}
+            disabled={noCoffee}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
               withMilk
                 ? 'bg-foreground text-background'
                 : 'bg-secondary text-foreground border border-border hover:bg-secondary/80'
-            }`}
+            } ${noCoffee ? 'opacity-60 cursor-not-allowed' : ''}`}
           >
             With Milk
           </button>
 
-          <button
-            onClick={() => setCold(!cold)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              cold
-                ? 'bg-foreground text-background'
-                : 'bg-secondary text-foreground border border-border hover:bg-secondary/80'
-            }`}
-          >
-            Cold Coffee
-          </button>
+          {!noCoffee && (
+            <button
+              onClick={() => setCold(!cold)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                cold
+                  ? 'bg-foreground text-background'
+                  : 'bg-secondary text-foreground border border-border hover:bg-secondary/80'
+              }`}
+            >
+              Cold Coffee
+            </button>
+          )}
 
           {activeBag && !noCoffee && (
             <button
@@ -312,7 +315,12 @@ export function CupForm() {
           </button>
 
           <button
-            onClick={() => setNoCoffee(!noCoffee)}
+            onClick={() => {
+              const next = !noCoffee
+              setNoCoffee(next)
+              setWithMilk(next ? true : withMilk)
+              if (next) setCold(false)
+            }}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
               noCoffee
                 ? 'bg-foreground text-background'
