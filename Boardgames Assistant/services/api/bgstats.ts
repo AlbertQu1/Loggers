@@ -6,7 +6,7 @@ export interface Companero {
   victorias: number
 }
 
-export type ModoCompaneros = 'jugadores' | 'solo' | 'todos'
+export type ModoCompaneros = 'jugadores' | 'todos'
 
 export async function getCompaneros(modo: ModoCompaneros = 'jugadores'): Promise<Companero[]> {
   const response = await fetch(`${API_BASE_URL}/bgstats/companeros?modo=${modo}`)
@@ -34,10 +34,14 @@ export interface TopJuego {
   juego: string
   partidas: number
   horas: number
+  digital: boolean
+  bots: string | null
 }
 
-export async function getTopJuegos(): Promise<TopJuego[]> {
-  const response = await fetch(`${API_BASE_URL}/bgstats/top-juegos`)
+export type ModoTopJuegos = 'todos' | 'solo'
+
+export async function getTopJuegos(modo: ModoTopJuegos = 'todos'): Promise<TopJuego[]> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/top-juegos?modo=${modo}`)
   if (!response.ok) throw new Error(`No se pudo cargar el top de juegos (${response.status})`)
   return response.json()
 }

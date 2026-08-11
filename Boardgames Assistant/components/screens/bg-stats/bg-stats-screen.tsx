@@ -6,7 +6,6 @@ import { getJuegosFaltantes, JuegoFaltante } from '@/services/api/reglamentos'
 import {
   getCompaneros, Companero, ModoCompaneros,
   getResumen, Resumen,
-  getTopJuegos, TopJuego,
   getCuandoJuegas, CuandoJuegas,
   getClima, Clima,
   getTopLugares, TopLugar,
@@ -38,7 +37,7 @@ function ListaFaltantes({ items }: { items: JuegoFaltante[] }) {
   )
 }
 
-function ListaCompaneros({ items, modo }: { items: Companero[]; modo: ModoCompaneros }) {
+function ListaCompaneros({ items }: { items: Companero[] }) {
   const maxPartidas = items[0]?.partidas || 1
   return (
     <div className="flex flex-col divide-y">
@@ -49,7 +48,7 @@ function ListaCompaneros({ items, modo }: { items: Companero[]; modo: ModoCompan
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm truncate">{c.nombre}</span>
               <span className="text-xs text-muted-foreground shrink-0">
-                {c.partidas} partidas{modo !== 'solo' && ` · ${winrate}% victorias`}
+                {c.partidas} partidas · {winrate}% victorias
               </span>
             </div>
             <div className="mt-1 h-1.5 rounded-full bg-muted overflow-hidden">
@@ -67,7 +66,6 @@ function ListaCompaneros({ items, modo }: { items: Companero[]; modo: ModoCompan
 
 const MODOS: { valor: ModoCompaneros; label: string }[] = [
   { valor: 'jugadores', label: 'Jugadores' },
-  { valor: 'solo', label: 'Solo' },
   { valor: 'todos', label: 'Todos' },
 ]
 
@@ -92,7 +90,6 @@ function ToggleModo({ modo, onChange }: { modo: ModoCompaneros; onChange: (m: Mo
 
 export function BgStatsScreen() {
   const [resumen, setResumen] = useState<Resumen | null>(null)
-  const [topJuegos, setTopJuegos] = useState<TopJuego[] | null>(null)
   const [cuandoJuegas, setCuandoJuegas] = useState<CuandoJuegas | null>(null)
   const [clima, setClima] = useState<Clima | null>(null)
   const [topLugares, setTopLugares] = useState<TopLugar[] | null>(null)
@@ -111,7 +108,6 @@ export function BgStatsScreen() {
       showToast(err instanceof Error ? err.message : mensaje, 'error')
 
     getResumen().then(setResumen).catch(manejarError('No se pudo cargar el resumen'))
-    getTopJuegos().then(setTopJuegos).catch(manejarError('No se pudo cargar el top de juegos'))
     getCuandoJuegas().then(setCuandoJuegas).catch(manejarError('No se pudo cargar la tendencia'))
     getClima().then(setClima).catch(manejarError('No se pudo cargar el clima'))
     getTopLugares().then(setTopLugares).catch(manejarError('No se pudo cargar el top de lugares'))
@@ -137,7 +133,7 @@ export function BgStatsScreen() {
   return (
     <div className="px-4 py-4 max-w-lg mx-auto flex flex-col gap-5">
       {resumen && <ResumenCards resumen={resumen} />}
-      {topJuegos && topJuegos.length > 0 && <TopJuegosCard items={topJuegos} />}
+      <TopJuegosCard />
       {cuandoJuegas && <CuandoJuegasCard datos={cuandoJuegas} />}
       {clima && <ClimaCard clima={clima} />}
       {topLugares && topLugares.length > 0 && <TopLugaresCard items={topLugares} />}
@@ -148,9 +144,9 @@ export function BgStatsScreen() {
           <p className="text-sm font-medium">Compañeros de juego</p>
         </div>
         <p className="text-xs text-muted-foreground mb-3">
-          {modoCompaneros === 'jugadores' && 'Con quién juegas más, ordenado por número de partidas.'}
-          {modoCompaneros === 'solo' && 'Partidas sin compañero real: solitario/automa, o gente al azar de la que no se guardó nombre.'}
-          {modoCompaneros === 'todos' && 'Todo, incluyendo el cajón genérico de jugadores anónimos.'}
+          {modoCompaneros === 'jugadores'
+            ? 'Con quién juegas más, ordenado por número de partidas.'
+            : 'Todo, incluyendo el cajón genérico de jugadores anónimos y bots.'}
         </p>
 
         <ToggleModo modo={modoCompaneros} onChange={setModoCompaneros} />
@@ -162,7 +158,7 @@ export function BgStatsScreen() {
         )}
 
         {!cargandoCompaneros && companeros && companeros.length > 0 && (
-          <ListaCompaneros items={companeros} modo={modoCompaneros} />
+          <ListaCompaneros items={companeros} />
         )}
       </div>
 
