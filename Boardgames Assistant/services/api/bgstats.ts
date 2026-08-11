@@ -6,8 +6,10 @@ export interface Companero {
   victorias: number
 }
 
-export async function getCompaneros(): Promise<Companero[]> {
-  const response = await fetch(`${API_BASE_URL}/bgstats/companeros`)
+export type ModoCompaneros = 'jugadores' | 'solo' | 'todos'
+
+export async function getCompaneros(modo: ModoCompaneros = 'jugadores'): Promise<Companero[]> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/companeros?modo=${modo}`)
   if (!response.ok) throw new Error(`No se pudo cargar la lista de companeros (${response.status})`)
   return response.json()
 }

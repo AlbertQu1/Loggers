@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { BookX, ChevronDown, ChevronRight, Loader2, Users } from 'lucide-react'
 import { getJuegosFaltantes, JuegoFaltante } from '@/services/api/reglamentos'
 import {
-  getCompaneros, Companero,
+  getCompaneros, Companero, ModoCompaneros,
   getResumen, Resumen,
   getTopJuegos, TopJuego,
   getCuandoJuegas, CuandoJuegas,
@@ -38,7 +38,7 @@ function ListaFaltantes({ items }: { items: JuegoFaltante[] }) {
   )
 }
 
-function ListaCompaneros({ items }: { items: Companero[] }) {
+function ListaCompaneros({ items, modo }: { items: Companero[]; modo: ModoCompaneros }) {
   const maxPartidas = items[0]?.partidas || 1
   return (
     <div className="flex flex-col divide-y">
@@ -49,7 +49,7 @@ function ListaCompaneros({ items }: { items: Companero[] }) {
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm truncate">{c.nombre}</span>
               <span className="text-xs text-muted-foreground shrink-0">
-                {c.partidas} partidas · {winrate}% victorias
+                {c.partidas} partidas{modo !== 'solo' && ` · ${winrate}% victorias`}
               </span>
             </div>
             <div className="mt-1 h-1.5 rounded-full bg-muted overflow-hidden">
@@ -65,6 +65,31 @@ function ListaCompaneros({ items }: { items: Companero[] }) {
   )
 }
 
+const MODOS: { valor: ModoCompaneros; label: string }[] = [
+  { valor: 'jugadores', label: 'Jugadores' },
+  { valor: 'solo', label: 'Solo' },
+  { valor: 'todos', label: 'Todos' },
+]
+
+function ToggleModo({ modo, onChange }: { modo: ModoCompaneros; onChange: (m: ModoCompaneros) => void }) {
+  return (
+    <div className="flex rounded-lg border p-0.5 mb-3 w-fit">
+      {MODOS.map((m) => (
+        <button
+          key={m.valor}
+          type="button"
+          onClick={() => onChange(m.valor)}
+          className={`px-3 py-1 text-xs rounded-md transition-colors ${
+            modo === m.valor ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
+          }`}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function BgStatsScreen() {
   const [resumen, setResumen] = useState<Resumen | null>(null)
   const [topJuegos, setTopJuegos] = useState<TopJuego[] | null>(null)
@@ -74,6 +99,7 @@ export function BgStatsScreen() {
 
   const [companeros, setCompaneros] = useState<Companero[] | null>(null)
   const [cargandoCompaneros, setCargandoCompaneros] = useState(true)
+  const [modoCompaneros, setModoCompaneros] = useState<ModoCompaneros>('jugadores')
 
   const [faltantes, setFaltantes] = useState<JuegoFaltante[] | null>(null)
   const [cargandoFaltantes, setCargandoFaltantes] = useState(true)
@@ -90,16 +116,19 @@ export function BgStatsScreen() {
     getClima().then(setClima).catch(manejarError('No se pudo cargar el clima'))
     getTopLugares().then(setTopLugares).catch(manejarError('No se pudo cargar el top de lugares'))
 
-    getCompaneros()
-      .then(setCompaneros)
-      .catch(manejarError('No se pudo cargar companeros'))
-      .finally(() => setCargandoCompaneros(false))
-
     getJuegosFaltantes()
       .then(setFaltantes)
       .catch(manejarError('No se pudo cargar la lista'))
       .finally(() => setCargandoFaltantes(false))
   }, [])
+
+  useEffect(() => {
+    setCargandoCompaneros(true)
+    getCompaneros(modoCompaneros)
+      .then(setCompaneros)
+      .catch((err) => showToast(err instanceof Error ? err.message : 'No se pudo cargar companeros', 'error'))
+      .finally(() => setCargandoCompaneros(false))
+  }, [modoCompaneros])
 
   const propios = faltantes?.filter((j) => j.es_propio) || []
   const otros = faltantes?.filter((j) => !j.es_propio) || []
@@ -119,8 +148,12 @@ export function BgStatsScreen() {
           <p className="text-sm font-medium">Compañeros de juego</p>
         </div>
         <p className="text-xs text-muted-foreground mb-3">
-          Con quién juegas más, ordenado por número de partidas.
+          {modoCompaneros === 'jugadores' && 'Con quién juegas más, ordenado por número de partidas.'}
+          {modoCompaneros === 'solo' && 'Partidas sin compañero real: solitario/automa, o gente al azar de la que no se guardó nombre.'}
+          {modoCompaneros === 'todos' && 'Todo, incluyendo el cajón genérico de jugadores anónimos.'}
         </p>
+
+        <ToggleModo modo={modoCompaneros} onChange={setModoCompaneros} />
 
         {cargandoCompaneros && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
@@ -129,7 +162,7 @@ export function BgStatsScreen() {
         )}
 
         {!cargandoCompaneros && companeros && companeros.length > 0 && (
-          <ListaCompaneros items={companeros} />
+          <ListaCompaneros items={companeros} modo={modoCompaneros} />
         )}
       </div>
 
