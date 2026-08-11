@@ -82,3 +82,20 @@ export async function getTopLugares(): Promise<TopLugar[]> {
   if (!response.ok) throw new Error(`No se pudo cargar el top de lugares (${response.status})`)
   return response.json()
 }
+
+export interface Coleccion {
+  gasto_total_mxn: number
+  copias_propias: number
+  copias_ya_no_tiene: number
+  en_wishlist: number
+  juegos_propios_total: number
+  juegos_propios_sin_jugar: number
+  por_categoria: { categoria: string; gasto_mxn: number; juegos: number }[]
+  top_fuentes: { fuente: string; gasto_mxn: number; juegos: number }[]
+}
+
+export async function getColeccion(): Promise<Coleccion> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/coleccion`)
+  if (!response.ok) throw new Error(`No se pudo cargar la colección (${response.status})`)
+  return response.json()
+}
