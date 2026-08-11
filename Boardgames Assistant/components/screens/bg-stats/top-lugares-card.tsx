@@ -1,7 +1,10 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { MapPin } from 'lucide-react'
 import { TopLugar } from '@/services/api/bgstats'
+
+const MapaLugares = dynamic(() => import('./mapa-lugares').then((m) => m.MapaLugares), { ssr: false })
 
 export function TopLugaresCard({ items }: { items: TopLugar[] }) {
   const maxPartidas = items[0]?.partidas || 1
@@ -12,6 +15,9 @@ export function TopLugaresCard({ items }: { items: TopLugar[] }) {
         <MapPin className="w-4 h-4 text-muted-foreground" />
         <p className="text-sm font-medium">Top lugares</p>
       </div>
+
+      <MapaLugares items={items} />
+
       <div className="flex flex-col divide-y">
         {items.map((l) => (
           <div key={l.lugar} className="py-2">

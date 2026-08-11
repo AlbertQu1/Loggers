@@ -111,7 +111,7 @@ export function BgStatsScreen() {
     getResumen().then(setResumen).catch(manejarError('No se pudo cargar el resumen'))
     getCuandoJuegas().then(setCuandoJuegas).catch(manejarError('No se pudo cargar la tendencia'))
     getClima().then(setClima).catch(manejarError('No se pudo cargar el clima'))
-    getTopLugares().then(setTopLugares).catch(manejarError('No se pudo cargar el top de lugares'))
+    getTopLugares(50).then(setTopLugares).catch(manejarError('No se pudo cargar el top de lugares'))
 
     getJuegosFaltantes()
       .then(setFaltantes)

@@ -77,8 +77,8 @@ export interface TopLugar {
   lon: number | null
 }
 
-export async function getTopLugares(): Promise<TopLugar[]> {
-  const response = await fetch(`${API_BASE_URL}/bgstats/top-lugares`)
+export async function getTopLugares(limite = 15): Promise<TopLugar[]> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/top-lugares?limite=${limite}`)
   if (!response.ok) throw new Error(`No se pudo cargar el top de lugares (${response.status})`)
   return response.json()
 }
