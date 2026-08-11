@@ -3,8 +3,20 @@
 import { useEffect, useState } from 'react'
 import { BookX, ChevronDown, ChevronRight, Loader2, Users } from 'lucide-react'
 import { getJuegosFaltantes, JuegoFaltante } from '@/services/api/reglamentos'
-import { getCompaneros, Companero } from '@/services/api/bgstats'
+import {
+  getCompaneros, Companero,
+  getResumen, Resumen,
+  getTopJuegos, TopJuego,
+  getCuandoJuegas, CuandoJuegas,
+  getClima, Clima,
+  getTopLugares, TopLugar,
+} from '@/services/api/bgstats'
 import { showToast } from '@/components/common/toast-notifications'
+import { ResumenCards } from './resumen-cards'
+import { TopJuegosCard } from './top-juegos-card'
+import { CuandoJuegasCard } from './cuando-juegas-card'
+import { ClimaCard } from './clima-card'
+import { TopLugaresCard } from './top-lugares-card'
 
 function formatFecha(fecha: string | null) {
   if (!fecha) return 'sin partidas'
@@ -54,6 +66,12 @@ function ListaCompaneros({ items }: { items: Companero[] }) {
 }
 
 export function BgStatsScreen() {
+  const [resumen, setResumen] = useState<Resumen | null>(null)
+  const [topJuegos, setTopJuegos] = useState<TopJuego[] | null>(null)
+  const [cuandoJuegas, setCuandoJuegas] = useState<CuandoJuegas | null>(null)
+  const [clima, setClima] = useState<Clima | null>(null)
+  const [topLugares, setTopLugares] = useState<TopLugar[] | null>(null)
+
   const [companeros, setCompaneros] = useState<Companero[] | null>(null)
   const [cargandoCompaneros, setCargandoCompaneros] = useState(true)
 
@@ -63,14 +81,23 @@ export function BgStatsScreen() {
   const [mostrarOtros, setMostrarOtros] = useState(false)
 
   useEffect(() => {
+    const manejarError = (mensaje: string) => (err: unknown) =>
+      showToast(err instanceof Error ? err.message : mensaje, 'error')
+
+    getResumen().then(setResumen).catch(manejarError('No se pudo cargar el resumen'))
+    getTopJuegos().then(setTopJuegos).catch(manejarError('No se pudo cargar el top de juegos'))
+    getCuandoJuegas().then(setCuandoJuegas).catch(manejarError('No se pudo cargar la tendencia'))
+    getClima().then(setClima).catch(manejarError('No se pudo cargar el clima'))
+    getTopLugares().then(setTopLugares).catch(manejarError('No se pudo cargar el top de lugares'))
+
     getCompaneros()
       .then(setCompaneros)
-      .catch((err) => showToast(err instanceof Error ? err.message : 'No se pudo cargar companeros', 'error'))
+      .catch(manejarError('No se pudo cargar companeros'))
       .finally(() => setCargandoCompaneros(false))
 
     getJuegosFaltantes()
       .then(setFaltantes)
-      .catch((err) => showToast(err instanceof Error ? err.message : 'No se pudo cargar la lista', 'error'))
+      .catch(manejarError('No se pudo cargar la lista'))
       .finally(() => setCargandoFaltantes(false))
   }, [])
 
@@ -80,6 +107,12 @@ export function BgStatsScreen() {
 
   return (
     <div className="px-4 py-4 max-w-lg mx-auto flex flex-col gap-5">
+      {resumen && <ResumenCards resumen={resumen} />}
+      {topJuegos && topJuegos.length > 0 && <TopJuegosCard items={topJuegos} />}
+      {cuandoJuegas && <CuandoJuegasCard datos={cuandoJuegas} />}
+      {clima && <ClimaCard clima={clima} />}
+      {topLugares && topLugares.length > 0 && <TopLugaresCard items={topLugares} />}
+
       <div className="rounded-lg border bg-card p-3">
         <div className="flex items-center gap-2 mb-1">
           <Users className="w-4 h-4 text-muted-foreground" />
