@@ -51,8 +51,8 @@ export async function GET(request: NextRequest) {
         `SELECT cp.*, cs.name as size_name, cb.coffee_name as bag_name, pl.name as location_name
          FROM coffee_preparations cp
          JOIN cup_sizes cs ON cs.id = cp.cup_size_id
-         JOIN coffee_bags cb ON cb.id = cp.bag_id
-         JOIN purchase_locations pl ON pl.id = cb.purchase_location_id
+         LEFT JOIN coffee_bags cb ON cb.id = cp.bag_id
+         LEFT JOIN purchase_locations pl ON pl.id = cb.purchase_location_id
          ${where}
          ORDER BY cp.prepared_timestamp DESC`,
         values
