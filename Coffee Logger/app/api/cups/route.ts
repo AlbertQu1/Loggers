@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/lib/db'
-import { getCupSizeId, resolveAlcoholTypes, resolveFlavors } from '@/lib/coffee-mappings'
+import {
+  getCupSizeId,
+  resolveAlcoholTypes,
+  resolveFlavors,
+  promoteFrequentOtherFlavors,
+} from '@/lib/coffee-mappings'
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,6 +64,10 @@ export async function POST(request: NextRequest) {
         otherFlavor,
       ]
     )
+
+    if (otherFlavor) {
+      await promoteFrequentOtherFlavors()
+    }
 
     const row = rows[0]
     return NextResponse.json({

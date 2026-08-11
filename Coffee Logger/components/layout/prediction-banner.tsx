@@ -17,7 +17,7 @@ export function PredictionBanner() {
   const date = new Date(prediction.prediction_date).toLocaleDateString('es-MX')
 
   return (
-    <div className="px-4 py-2 text-xs text-center bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+    <div className="mb-6 px-4 py-2 text-xs text-center rounded-md bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
       🤖 {prediction.coffee_name}: el modelo predice ~{prediction.predicted_total_cups.toFixed(0)} tazas
       en ~{prediction.predicted_cycle_days.toFixed(0)} días (última corrida: {date})
     </div>

@@ -4,7 +4,6 @@ import './globals.css'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { HealthIndicator } from '@/components/layout/health-indicator'
 import { MaintenanceIndicator } from '@/components/layout/maintenance-indicator'
-import { PredictionBanner } from '@/components/layout/prediction-banner'
 import { ToastContainer } from '@/components/common/toast-notifications'
 
 export const metadata: Metadata = {
@@ -76,8 +75,6 @@ export default function RootLayout({
               </div>
             </div>
           </header>
-
-          <PredictionBanner />
 
           <main className="flex-1 pb-20">
             {children}

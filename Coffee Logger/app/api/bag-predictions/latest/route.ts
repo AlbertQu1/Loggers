@@ -17,7 +17,15 @@ export async function GET() {
       return NextResponse.json({ success: true, data: null })
     }
 
-    return NextResponse.json({ success: true, data: rows[0] })
+    const row = rows[0]
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...row,
+        predicted_total_cups: Number(row.predicted_total_cups),
+        predicted_cycle_days: Number(row.predicted_cycle_days),
+      },
+    })
   } catch (error) {
     console.error('[bag-predictions/latest:GET]', error)
     return NextResponse.json({ success: false, error: 'Failed to fetch prediction' }, { status: 500 })

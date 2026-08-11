@@ -88,6 +88,36 @@ export async function resolveFlavors(
   }
 }
 
+// Free-text flavors typed into "other" enough times are probably a real
+// flavor someone forgot to add to the catalog, not a one-off typo. Promote
+// them automatically instead of requiring a manual catalog edit.
+const OTHER_FLAVOR_PROMOTION_THRESHOLD = 5
+
+export async function promoteFrequentOtherFlavors(): Promise<void> {
+  const { rows } = await pool.query(
+    `SELECT (array_agg(name))[1] AS name
+     FROM (
+       SELECT trim(elem) AS name, lower(trim(elem)) AS name_lower
+       FROM coffee_preparations, unnest(string_to_array(other_flavor, ',')) AS elem
+       WHERE other_flavor IS NOT NULL AND trim(elem) <> ''
+     ) unmatched
+     GROUP BY name_lower
+     HAVING count(*) >= $1`,
+    [OTHER_FLAVOR_PROMOTION_THRESHOLD]
+  )
+
+  if (rows.length === 0) return
+
+  await pool.query(
+    `INSERT INTO flavors (name)
+     SELECT unnest($1::text[])
+     ON CONFLICT (name) DO NOTHING`,
+    [rows.map((r) => r.name)]
+  )
+
+  flavorsCache = null
+}
+
 // pg parses DATE columns as a local-midnight JS Date, so build the ISO date
 // string from local getters instead of toISOString() to avoid a day shift.
 export function dateToISODate(d: Date | null): string | null {
