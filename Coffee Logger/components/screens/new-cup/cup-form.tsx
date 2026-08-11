@@ -70,10 +70,11 @@ export function CupForm() {
   }, [])
 
   const handleRegister = async () => {
-    if (!selectedSize) {
+    if (!selectedSize && !noCoffee) {
       showToast('Please select a cup size', 'warning')
       return
     }
+    const size = noCoffee ? '8oz' : selectedSize
 
     setIsLoading(true)
 
@@ -107,7 +108,7 @@ export function CupForm() {
       }
 
       const payload = {
-        size: selectedSize,
+        size,
         cups_prepared: multipleCups ? cupsPrepared : 1,
         cold,
         withMilk,
@@ -164,7 +165,7 @@ export function CupForm() {
         }
 
         await enqueueSyncItem('POST', '/cups', {
-          size: selectedSize,
+          size,
           cups_prepared: multipleCups ? cupsPrepared : 1,
           cold,
           withMilk,
@@ -234,27 +235,29 @@ export function CupForm() {
         </div>
       )}
 
-      {/* Cup Size Selection */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-          Cup Size
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          {CUP_SIZES.map((size) => (
-            <button
-              key={size.value}
-              onClick={() => setSelectedSize(size.value)}
-              className={`p-4 rounded-2xl font-semibold text-base transition-all ${
-                selectedSize === size.value
-                  ? 'bg-foreground text-background shadow-md'
-                  : 'bg-secondary text-foreground hover:bg-secondary/80 border border-border'
-              }`}
-            >
-              {size.label}
-            </button>
-          ))}
+      {/* Cup Size Selection - not relevant for no-coffee (flavor-only) preps */}
+      {!noCoffee && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Cup Size
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {CUP_SIZES.map((size) => (
+              <button
+                key={size.value}
+                onClick={() => setSelectedSize(size.value)}
+                className={`p-4 rounded-2xl font-semibold text-base transition-all ${
+                  selectedSize === size.value
+                    ? 'bg-foreground text-background shadow-md'
+                    : 'bg-secondary text-foreground hover:bg-secondary/80 border border-border'
+                }`}
+              >
+                {size.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Options - Toggle Chips */}
       <div className="space-y-3">
@@ -460,7 +463,7 @@ export function CupForm() {
       {/* Register Button */}
       <Button
         onClick={handleRegister}
-        disabled={isLoading || !selectedSize}
+        disabled={isLoading || (!selectedSize && !noCoffee)}
         className="w-full h-14 rounded-2xl text-base font-semibold"
       >
         {isLoading ? 'Recording...' : 'Record Event'}
