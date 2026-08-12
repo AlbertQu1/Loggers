@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageCircleQuestion, BarChart3, Plus } from 'lucide-react'
+import { MessageCircleQuestion, BarChart3, Plus, Brain } from 'lucide-react'
 import { getPendientes } from '@/services/api/reglamentos'
 
 const NAV_ITEMS = [
@@ -16,6 +16,11 @@ const NAV_ITEMS = [
     href: '/bg-stats',
     label: 'BG Stats',
     icon: BarChart3,
+  },
+  {
+    href: '/ml',
+    label: 'ML',
+    icon: Brain,
   },
   {
     href: '/agregar',

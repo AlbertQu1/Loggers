@@ -65,7 +65,7 @@ export function TopJuegosCard() {
                 {j.partidas} partidas · {j.horas}h
               </span>
             </div>
-            {j.bots && <p className="text-xs text-muted-foreground mt-0.5">🤖 {j.bots}</p>}
+            {j.bots && !j.digital && <p className="text-xs text-muted-foreground mt-0.5">🤖 {j.bots}</p>}
             <div className="mt-1 h-1.5 rounded-full bg-muted overflow-hidden">
               <div
                 className="h-full rounded-full bg-primary"

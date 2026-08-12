@@ -114,3 +114,57 @@ export async function getPropiosSinJugar(): Promise<JuegoSinJugar[]> {
   if (!response.ok) throw new Error(`No se pudo cargar la lista de juegos sin jugar (${response.status})`)
   return response.json()
 }
+
+export interface JuegoPredecible {
+  nombre: string
+  min_jugadores: number | null
+  max_jugadores: number | null
+}
+
+export async function getJuegosPredecibles(): Promise<JuegoPredecible[]> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/duracion/juegos`)
+  if (!response.ok) throw new Error(`No se pudo cargar la lista de juegos (${response.status})`)
+  return response.json()
+}
+
+export interface EntrenamientoDuracion {
+  n: number
+  ganador: string
+  mae_por_modelo: Record<string, number>
+  mae_baseline: number
+  coeficientes: Record<string, number>
+}
+
+export async function getEntrenamientoDuracion(): Promise<EntrenamientoDuracion> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/duracion/entrenamiento`)
+  if (!response.ok) throw new Error(`No se pudo entrenar el modelo (${response.status})`)
+  return response.json()
+}
+
+export interface PrediccionDuracion {
+  juego: string
+  num_jugadores: number
+  lugar_categoria: string | null
+  grupo_social: string | null
+  duracion_estimada_min: number
+  mae_modelo: number
+}
+
+export async function predecirDuracion(
+  juego: string,
+  numJugadores: number,
+  lugarCategoria?: string,
+  grupoSocial?: string,
+  usaExpansion?: boolean
+): Promise<PrediccionDuracion> {
+  const params = new URLSearchParams({ juego, num_jugadores: String(numJugadores) })
+  if (lugarCategoria) params.set('lugar_categoria', lugarCategoria)
+  if (grupoSocial) params.set('grupo_social', grupoSocial)
+  if (usaExpansion) params.set('usa_expansion', 'true')
+  const response = await fetch(`${API_BASE_URL}/bgstats/duracion/predecir?${params}`)
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+    throw new Error(body?.detail || `No se pudo predecir la duración (${response.status})`)
+  }
+  return response.json()
+}
