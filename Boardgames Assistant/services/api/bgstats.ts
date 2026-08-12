@@ -99,3 +99,18 @@ export async function getColeccion(): Promise<Coleccion> {
   if (!response.ok) throw new Error(`No se pudo cargar la colección (${response.status})`)
   return response.json()
 }
+
+export interface JuegoSinJugar {
+  nombre: string
+  min_jugadores: number | null
+  max_jugadores: number | null
+  min_duracion_min: number | null
+  max_duracion_min: number | null
+  rating: number | null
+}
+
+export async function getPropiosSinJugar(): Promise<JuegoSinJugar[]> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/propios-sin-jugar`)
+  if (!response.ok) throw new Error(`No se pudo cargar la lista de juegos sin jugar (${response.status})`)
+  return response.json()
+}

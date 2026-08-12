@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Wallet } from 'lucide-react'
-import { getColeccion, Coleccion } from '@/services/api/bgstats'
+import { ChevronDown, ChevronRight, Wallet } from 'lucide-react'
+import { getColeccion, getPropiosSinJugar, Coleccion, JuegoSinJugar } from '@/services/api/bgstats'
 import { showToast } from '@/components/common/toast-notifications'
 
 const ETIQUETA_CATEGORIA: Record<string, string> = {
@@ -11,20 +11,50 @@ const ETIQUETA_CATEGORIA: Record<string, string> = {
   regalo: '🎁 Regalo',
   viaje: '✈️ Viaje',
   amigos: '🤝 Amigos',
+  sin_categoria: '📦 Otros',
 }
 
 function money(v: number) {
   return v.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 })
 }
 
+function duracionStr(min: number | null, max: number | null) {
+  if (!min && !max) return null
+  if (min && max && min !== max) return `${min}-${max} min`
+  return `${min || max} min`
+}
+
+function jugadoresStr(min: number | null, max: number | null) {
+  if (!min && !max) return null
+  if (min && max && min !== max) return `${min}-${max} jug.`
+  return `${min || max} jug.`
+}
+
 export function ColeccionCard() {
   const [datos, setDatos] = useState<Coleccion | null>(null)
+  const [mostrarSinJugar, setMostrarSinJugar] = useState(false)
+  const [sinJugar, setSinJugar] = useState<JuegoSinJugar[] | null>(null)
+  const [cargandoSinJugar, setCargandoSinJugar] = useState(false)
 
   useEffect(() => {
     getColeccion()
       .then(setDatos)
       .catch((err) => showToast(err instanceof Error ? err.message : 'No se pudo cargar la colección', 'error'))
   }, [])
+
+  const toggleSinJugar = () => {
+    const abriendo = !mostrarSinJugar
+    setMostrarSinJugar(abriendo)
+    if (abriendo && sinJugar === null) {
+      setCargandoSinJugar(true)
+      getPropiosSinJugar()
+        .then(setSinJugar)
+        .catch((err) =>
+          showToast(err instanceof Error ? err.message : 'No se pudo cargar la lista', 'error')
+        )
+        .finally(() => setCargandoSinJugar(false))
+    }
+  }
 
   if (!datos) return null
 
@@ -47,15 +77,50 @@ export function ColeccionCard() {
           <p className="text-lg font-semibold">{datos.copias_propias}</p>
           <p className="text-xs text-muted-foreground">Copias que tienes</p>
         </div>
-        <div className="rounded-md bg-muted/40 p-2.5">
-          <p className="text-lg font-semibold">{datos.juegos_propios_sin_jugar}</p>
+        <button
+          type="button"
+          onClick={toggleSinJugar}
+          className="rounded-md bg-muted/40 p-2.5 text-left hover:bg-muted/70 transition-colors"
+        >
+          <div className="flex items-center gap-1">
+            <p className="text-lg font-semibold">{datos.juegos_propios_sin_jugar}</p>
+            {mostrarSinJugar ? (
+              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">Propios sin jugar</p>
-        </div>
+        </button>
         <div className="rounded-md bg-muted/40 p-2.5">
           <p className="text-lg font-semibold">{datos.copias_ya_no_tiene}</p>
           <p className="text-xs text-muted-foreground">Ya no tienes</p>
         </div>
       </div>
+
+      {mostrarSinJugar && (
+        <div className="mb-4 rounded-md border p-2.5">
+          {cargandoSinJugar && <p className="text-xs text-muted-foreground py-1">Cargando...</p>}
+          {!cargandoSinJugar && sinJugar && sinJugar.length === 0 && (
+            <p className="text-xs text-muted-foreground py-1">Ya jugaste todos tus juegos propios. 🎉</p>
+          )}
+          {!cargandoSinJugar && sinJugar && sinJugar.length > 0 && (
+            <div className="flex flex-col divide-y">
+              {sinJugar.map((j) => {
+                const detalle = [jugadoresStr(j.min_jugadores, j.max_jugadores), duracionStr(j.min_duracion_min, j.max_duracion_min)]
+                  .filter(Boolean)
+                  .join(' · ')
+                return (
+                  <div key={j.nombre} className="py-1.5">
+                    <p className="text-sm truncate">{j.nombre}</p>
+                    {detalle && <p className="text-xs text-muted-foreground">{detalle}</p>}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       <p className="text-xs text-muted-foreground mb-2">Gasto por tipo de compra</p>
       <div className="flex flex-col gap-2 mb-4">

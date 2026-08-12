@@ -17,15 +17,36 @@ function iconoPara(partidas: number, max: number) {
   })
 }
 
+const CDMX_CENTER: [number, number] = [19.4326, -99.1332]
+const CDMX_RADIO_KM = 60
+
+function distanciaKm(a: [number, number], b: [number, number]) {
+  const R = 6371
+  const dLat = ((b[0] - a[0]) * Math.PI) / 180
+  const dLon = ((b[1] - a[1]) * Math.PI) / 180
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((a[0] * Math.PI) / 180) * Math.cos((b[0] * Math.PI) / 180) * Math.sin(dLon / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(s))
+}
+
 function AjustarVista({ puntos }: { puntos: [number, number][] }) {
   const map = useMap()
   useEffect(() => {
-    if (puntos.length === 0) return
-    if (puntos.length === 1) {
-      map.setView(puntos[0], 12)
+    // Primera vista: solo CDMX y alrededores — los lugares muy dispersos
+    // (viajes, otras ciudades) harian que fitBounds sobre TODOS los puntos
+    // deje CDMX como un punto minusculo. El usuario puede alejar el mapa
+    // manualmente para ver los demas.
+    const cercanos = puntos.filter((p) => distanciaKm(p, CDMX_CENTER) <= CDMX_RADIO_KM)
+    if (cercanos.length === 0) {
+      map.setView(CDMX_CENTER, 11)
       return
     }
-    map.fitBounds(puntos, { padding: [24, 24] })
+    if (cercanos.length === 1) {
+      map.setView(cercanos[0], 12)
+      return
+    }
+    map.fitBounds(cercanos, { padding: [24, 24] })
   }, [map, puntos])
   return null
 }
@@ -42,7 +63,7 @@ export function MapaLugares({ items }: { items: TopLugar[] }) {
 
   return (
     <div className="rounded-lg overflow-hidden border h-64 mb-3">
-      <MapContainer center={puntos[0]} zoom={11} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+      <MapContainer center={CDMX_CENTER} zoom={11} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
