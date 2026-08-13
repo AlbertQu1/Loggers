@@ -32,13 +32,13 @@ export function LugaresPendientesBadge() {
         title="Lugares nuevos sin categorizar"
       >
         <MapPinPlus className="w-5 h-5" />
-        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+        <span className="absolute -top-0.5 -right-0.5 z-10 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
           {pendientes.length}
         </span>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-72 rounded-lg border bg-background shadow-lg z-50 overflow-hidden">
+        <div className="fixed top-16 right-3 w-72 max-w-[calc(100vw-1.5rem)] rounded-lg border bg-background shadow-lg z-50 overflow-hidden">
           <div className="px-3 py-2 border-b bg-muted/50">
             <p className="text-sm font-medium">Lugares nuevos por revisar</p>
           </div>

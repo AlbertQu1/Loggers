@@ -50,7 +50,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center justify-between px-4 py-3">
               <h1 className="text-xl font-bold">🎲 Boardgames Assistant</h1>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-3">
                 <LugaresPendientesBadge />
                 <AmigosPendientesBadge />
                 <HealthIndicator />
