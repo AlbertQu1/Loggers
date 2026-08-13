@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { HealthIndicator } from '@/components/layout/health-indicator'
+import { AmigosPendientesBadge } from '@/components/layout/amigos-pendientes-badge'
+import { LugaresPendientesBadge } from '@/components/layout/lugares-pendientes-badge'
 import { ToastContainer } from '@/components/common/toast-notifications'
 
 export const metadata: Metadata = {
@@ -48,7 +50,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center justify-between px-4 py-3">
               <h1 className="text-xl font-bold">🎲 Boardgames Assistant</h1>
-              <HealthIndicator />
+              <div className="flex items-center gap-1">
+                <LugaresPendientesBadge />
+                <AmigosPendientesBadge />
+                <HealthIndicator />
+              </div>
             </div>
           </header>
 

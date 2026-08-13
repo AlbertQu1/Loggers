@@ -150,6 +150,48 @@ export interface PrediccionDuracion {
   mae_modelo: number
 }
 
+export interface AmigoPendiente {
+  bgg_username: string
+  jugador_nombre: string
+  detectado_en: string
+}
+
+export async function getAmigosPendientes(): Promise<AmigoPendiente[]> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/amigos/pendientes`)
+  if (!response.ok) throw new Error(`No se pudo cargar amigos pendientes (${response.status})`)
+  return response.json()
+}
+
+export async function revisarAmigoPendiente(bggUsername: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/bgstats/amigos/pendientes/${encodeURIComponent(bggUsername)}/revisar`,
+    { method: 'POST' }
+  )
+  if (!response.ok) throw new Error(`No se pudo marcar como revisado (${response.status})`)
+}
+
+export type TipoLugarPendiente = 'compra' | 'lugar_partida'
+
+export interface LugarPendiente {
+  tipo: TipoLugarPendiente
+  valor: string
+  detectado_en: string
+}
+
+export async function getLugaresPendientes(): Promise<LugarPendiente[]> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/lugares/pendientes`)
+  if (!response.ok) throw new Error(`No se pudo cargar lugares pendientes (${response.status})`)
+  return response.json()
+}
+
+export async function revisarLugarPendiente(tipo: TipoLugarPendiente, valor: string): Promise<void> {
+  const params = new URLSearchParams({ tipo, valor })
+  const response = await fetch(`${API_BASE_URL}/bgstats/lugares/pendientes/revisar?${params}`, {
+    method: 'POST',
+  })
+  if (!response.ok) throw new Error(`No se pudo marcar como revisado (${response.status})`)
+}
+
 export async function predecirDuracion(
   juego: string,
   numJugadores: number,
