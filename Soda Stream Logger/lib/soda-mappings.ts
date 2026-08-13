@@ -28,6 +28,7 @@ export function toFlavor(row: any) {
     brand: row.brand,
     cost: row.cost !== null ? Number(row.cost) : null,
     ml: row.ml,
+    remainingMl: row.remaining_ml !== undefined && row.remaining_ml !== null ? Number(row.remaining_ml) : null,
     purchaseDate: dateToISODate(row.purchase_date),
     finishedDate: dateToISODate(row.finished_date),
     alwaysAvailable: row.always_available,

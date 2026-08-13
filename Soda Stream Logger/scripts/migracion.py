@@ -31,6 +31,16 @@ explicitos, igual que el script de cafe documenta "Regalo"/is_annual):
 - MARKET: una fila por (segmento, marca, anio) -- normaliza las columnas
   2025/2026 del sheet a filas, para poder agregar anios nuevos despues sin
   cambiar el schema (UNIQUE en segment+brand+year permite upsert).
+- soda_cylinders.historical_liters: litros de la era manual (los que NO
+  entran a soda_preparations) por cilindro, para no perder ese
+  rendimiento historico. El total real de litros de un cilindro es
+  historical_liters + SUM(soda_preparations.bottles_prepared) -- ver
+  migracion 0009.
+- soda_flavors.finished_date: NO se infiere solo de la fecha del ultimo
+  consumo (eso da falsos positivos, ej. Arandano no tiene consumo
+  reciente pero SI sigue disponible). Solo se cierra para los sabores en
+  SABORES_AGOTADOS (confirmados manualmente como agotados), con
+  finished_date = fecha de su ultima preparacion en CONSUMPTION.
 
 Uso:
     python scripts/migracion.py
@@ -160,6 +170,34 @@ def migrate_flavors(conn, df_history: pd.DataFrame, df_flavors: pd.DataFrame) ->
     return sabor_id_a_flavor_id
 
 
+SABORES_AGOTADOS = {"pepino menta"}  # confirmado por Alberto (no se puede inferir solo con datos: Arandano tampoco tiene consumo reciente pero SI sigue disponible)
+
+
+def cerrar_sabores_agotados(conn, df_consumption: pd.DataFrame, df_flavors: pd.DataFrame, sabor_id_a_flavor_id: dict):
+    """finished_date = fecha de la ultima preparacion con ese sabor en
+    CONSUMPTION, solo para los sabores en SABORES_AGOTADOS (confirmados
+    manualmente como agotados -- la falta de consumo reciente por si sola
+    NO implica que un sabor este agotado, ver Arandano)."""
+    fechas = pd.to_datetime(df_consumption["fecha"], dayfirst=True, errors="coerce")
+    ultima_por_sabor = fechas.groupby(df_consumption["sabor_id"]).max()
+
+    with conn.cursor() as cur:
+        for _, row in df_flavors.iterrows():
+            clave = normalize_key(row["Sabor"])
+            if clave not in SABORES_AGOTADOS:
+                continue
+            sabor_id = int(row["id"])
+            flavor_id = sabor_id_a_flavor_id.get(sabor_id)
+            ultima_fecha = ultima_por_sabor.get(sabor_id)
+            if flavor_id is None or pd.isna(ultima_fecha):
+                continue
+            cur.execute(
+                "UPDATE soda_flavors SET finished_date = %s WHERE id = %s",
+                (ultima_fecha.date(), flavor_id),
+            )
+    conn.commit()
+
+
 def migrate_cylinders(conn, df_refills: pd.DataFrame, df_consumption: pd.DataFrame) -> dict[str, int]:
     fechas_consumo = pd.to_datetime(df_consumption["fecha"], dayfirst=True, errors="coerce")
     por_tanque: dict[str, list] = {}
@@ -169,12 +207,20 @@ def migrate_cylinders(conn, df_refills: pd.DataFrame, df_consumption: pd.DataFra
 
     tanque_mas_reciente = max(por_tanque, key=lambda t: max(por_tanque[t])) if por_tanque else None
 
+    # litros de la era manual por tanque (no cubierta por soda_preparations,
+    # ver historical_liters en 0009) -- si un tanque no tiene filas de la
+    # era manual (ej. G, H, del equipo nuevo) su rendimiento ya queda
+    # completo con soda_preparations, no necesita historical_liters.
+    es_manual = df_consumption["intensidad"].astype(str).str.strip() == "-"
+    litros_manual_por_tanque = df_consumption[es_manual].groupby("cilindro_id")["consumo"].sum().to_dict()
+
     label_a_id: dict[str, int] = {}
     with conn.cursor() as cur:
         for _, row in df_refills.iterrows():
             tanque = row["Tanque"]
             precio = round(float(row["Costo"]))
             fechas_tanque = por_tanque.get(tanque)
+            historical_liters = litros_manual_por_tanque.get(tanque)
 
             if fechas_tanque is None:
                 # nunca aparece en consumo -- comprado pero sin abrir (PENDING)
@@ -193,11 +239,12 @@ def migrate_cylinders(conn, df_refills: pd.DataFrame, df_consumption: pd.DataFra
                 status = "ACTIVE" if es_activo else "CLOSED"
                 cur.execute(
                     """
-                    INSERT INTO soda_cylinders (label, price, purchase_date, opened_date, closed_date, status)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    INSERT INTO soda_cylinders
+                        (label, price, purchase_date, opened_date, closed_date, status, historical_liters)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """,
-                    (tanque, precio, purchase_date, purchase_date, closed_date, status),
+                    (tanque, precio, purchase_date, purchase_date, closed_date, status, historical_liters),
                 )
             label_a_id[tanque] = cur.fetchone()[0]
     conn.commit()
@@ -285,6 +332,7 @@ if __name__ == "__main__":
     print("Migrando sabores (FLAVOR_HISTORY + Limon sintetico)...")
     sabor_id_a_flavor_id = migrate_flavors(conn, df_flavor_history, df_flavors)
     print("  mapeo sabor_id -> soda_flavors.id:", sabor_id_a_flavor_id)
+    cerrar_sabores_agotados(conn, df_consumption, df_flavors, sabor_id_a_flavor_id)
 
     print("Migrando cilindros (REFILLS + fechas inferidas de CONSUMPTION)...")
     label_a_cylinder_id = migrate_cylinders(conn, df_refills, df_consumption)

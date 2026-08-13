@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CupSoda, Cylinder, Citrus } from 'lucide-react'
+import { CupSoda, Cylinder, Citrus, History } from 'lucide-react'
 
 const NAV_ITEMS = [
   {
@@ -19,6 +19,11 @@ const NAV_ITEMS = [
     href: '/flavors',
     label: 'Flavors',
     icon: Citrus,
+  },
+  {
+    href: '/history',
+    label: 'History',
+    icon: History,
   },
 ]
 

@@ -62,7 +62,11 @@ export function FlavorsList() {
             const details = [
               flavor.brand,
               flavor.cost !== null ? `$${flavor.cost}` : null,
-              flavor.ml ? `${flavor.ml}ml` : null,
+              flavor.remainingMl !== null
+                ? `${Math.max(0, flavor.remainingMl)}/${flavor.ml}ml left`
+                : flavor.ml
+                  ? `${flavor.ml}ml`
+                  : null,
               flavor.purchaseDate ? formatLocalDate(flavor.purchaseDate) : null,
             ]
               .filter(Boolean)
