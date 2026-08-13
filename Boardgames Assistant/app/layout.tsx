@@ -4,6 +4,7 @@ import { BottomNav } from '@/components/layout/bottom-nav'
 import { HealthIndicator } from '@/components/layout/health-indicator'
 import { AmigosPendientesBadge } from '@/components/layout/amigos-pendientes-badge'
 import { LugaresPendientesBadge } from '@/components/layout/lugares-pendientes-badge'
+import { AnonimosPendientesBadge } from '@/components/layout/anonimos-pendientes-badge'
 import { ToastContainer } from '@/components/common/toast-notifications'
 
 export const metadata: Metadata = {
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <h1 className="text-xl font-bold">🎲 Boardgames Assistant</h1>
               <div className="flex items-center gap-3">
                 <LugaresPendientesBadge />
+                <AnonimosPendientesBadge />
                 <AmigosPendientesBadge />
                 <HealthIndicator />
               </div>

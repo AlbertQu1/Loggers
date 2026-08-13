@@ -192,6 +192,31 @@ export async function revisarLugarPendiente(tipo: TipoLugarPendiente, valor: str
   if (!response.ok) throw new Error(`No se pudo marcar como revisado (${response.status})`)
 }
 
+export type TipoAnonimoPendiente = 'mixto' | 'sin_senal'
+
+export interface AnonimoPendiente {
+  partida_uuid: string
+  tipo: TipoAnonimoPendiente
+  fecha: string
+  juego: string
+  lugar: string | null
+  jugadores_con_grupo: string | null
+}
+
+export async function getAnonimosPendientes(): Promise<AnonimoPendiente[]> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/anonimos/pendientes`)
+  if (!response.ok) throw new Error(`No se pudo cargar partidas pendientes (${response.status})`)
+  return response.json()
+}
+
+export async function revisarAnonimoPendiente(partidaUuid: string, grupoSocial: string): Promise<void> {
+  const params = new URLSearchParams({ partida_uuid: partidaUuid, grupo_social: grupoSocial })
+  const response = await fetch(`${API_BASE_URL}/bgstats/anonimos/pendientes/revisar?${params}`, {
+    method: 'POST',
+  })
+  if (!response.ok) throw new Error(`No se pudo asignar el grupo (${response.status})`)
+}
+
 export async function predecirDuracion(
   juego: string,
   numJugadores: number,
