@@ -11,10 +11,14 @@ const ABREV: Record<string, string> = {
 
 export function CuandoJuegasCard({ datos }: { datos: CuandoJuegas }) {
   const porDia = ORDEN_DIAS.map(
-    (dia) => datos.por_dia_semana.find((d) => d.dia === dia) || { dia, partidas: 0 }
+    (dia) =>
+      datos.por_dia_semana.find((d) => d.dia === dia) || {
+        dia, partidas: 0, probabilidad: 0, probabilidad_amigos: 0,
+      }
   )
   const maxDia = Math.max(...porDia.map((d) => d.partidas), 1)
   const maxMes = Math.max(...datos.por_mes.map((m) => m.partidas), 1)
+  const hayProbabilidad = porDia.some((d) => d.probabilidad > 0 || d.probabilidad_amigos > 0)
 
   return (
     <div className="rounded-lg border bg-card p-3">
@@ -38,6 +42,41 @@ export function CuandoJuegasCard({ datos }: { datos: CuandoJuegas }) {
           </div>
         ))}
       </div>
+
+      {hayProbabilidad && (
+        <>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted-foreground">Probabilidad de jugar por día</p>
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-sm bg-primary inline-block" /> Tú
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-sm bg-primary/30 inline-block" /> Amigos
+              </span>
+            </div>
+          </div>
+          <div className="flex items-end gap-1.5 h-20 mb-4">
+            {porDia.map((d) => (
+              <div key={d.dia} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full flex items-end justify-center gap-0.5 h-14">
+                  <div
+                    className="flex-1 rounded-t bg-primary"
+                    style={{ height: `${Math.max(3, d.probabilidad * 100)}%` }}
+                    title={`Tú: ${(d.probabilidad * 100).toFixed(0)}%`}
+                  />
+                  <div
+                    className="flex-1 rounded-t bg-primary/30"
+                    style={{ height: `${Math.max(3, d.probabilidad_amigos * 100)}%` }}
+                    title={`Amigos: ${(d.probabilidad_amigos * 100).toFixed(0)}%`}
+                  />
+                </div>
+                <span className="text-[10px] text-muted-foreground">{ABREV[d.dia]}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {datos.por_mes.length > 0 && (
         <>

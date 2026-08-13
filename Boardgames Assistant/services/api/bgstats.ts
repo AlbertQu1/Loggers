@@ -47,7 +47,7 @@ export async function getTopJuegos(modo: ModoTopJuegos = 'todos'): Promise<TopJu
 }
 
 export interface CuandoJuegas {
-  por_dia_semana: { dia: string; partidas: number }[]
+  por_dia_semana: { dia: string; partidas: number; probabilidad: number; probabilidad_amigos: number }[]
   por_mes: { mes: string; partidas: number }[]
 }
 
