@@ -235,3 +235,25 @@ export async function predecirDuracion(
   }
   return response.json()
 }
+
+export async function getEntrenamientoDuracionSolo(): Promise<EntrenamientoDuracion> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/duracion-solo/entrenamiento`)
+  if (!response.ok) throw new Error(`No se pudo entrenar el modelo solo (${response.status})`)
+  return response.json()
+}
+
+export interface PrediccionDuracionSolo {
+  juego: string
+  duracion_estimada_min: number
+  mae_modelo: number
+}
+
+export async function predecirDuracionSolo(juego: string): Promise<PrediccionDuracionSolo> {
+  const params = new URLSearchParams({ juego })
+  const response = await fetch(`${API_BASE_URL}/bgstats/duracion-solo/predecir?${params}`)
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+    throw new Error(body?.detail || `No se pudo predecir la duración solo (${response.status})`)
+  }
+  return response.json()
+}

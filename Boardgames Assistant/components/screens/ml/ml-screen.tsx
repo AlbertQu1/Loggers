@@ -5,10 +5,13 @@ import { Brain, ChevronDown, ChevronRight, Loader2, Sparkles } from 'lucide-reac
 import {
   getJuegosPredecibles,
   getEntrenamientoDuracion,
+  getEntrenamientoDuracionSolo,
   predecirDuracion,
+  predecirDuracionSolo,
   JuegoPredecible,
   EntrenamientoDuracion,
   PrediccionDuracion,
+  PrediccionDuracionSolo,
 } from '@/services/api/bgstats'
 import { showToast } from '@/components/common/toast-notifications'
 
@@ -29,6 +32,9 @@ const ETIQUETA_FEATURE: Record<string, string> = {
   lugar_amigos: 'Lugar: amigos',
   lugar_expareja: 'Lugar: expareja',
   lugar_pareja: 'Lugar: pareja',
+  tag_solo: 'Modo solitario',
+  min_jugadores: 'Mín. jugadores (BGG)',
+  max_jugadores: 'Máx. jugadores (BGG)',
 }
 
 const CATEGORIAS_LUGAR = [
@@ -60,6 +66,7 @@ export function MlScreen() {
   const [juegos, setJuegos] = useState<JuegoPredecible[] | null>(null)
   const [entrenamiento, setEntrenamiento] = useState<EntrenamientoDuracion | null>(null)
   const [cargandoEntrenamiento, setCargandoEntrenamiento] = useState(true)
+  const [modoSolo, setModoSolo] = useState(false)
 
   const [juego, setJuego] = useState('')
   const [numJugadores, setNumJugadores] = useState(4)
@@ -67,19 +74,24 @@ export function MlScreen() {
   const [grupoSocial, setGrupoSocial] = useState('')
   const [usaExpansion, setUsaExpansion] = useState(false)
   const [prediciendo, setPrediciendo] = useState(false)
-  const [prediccion, setPrediccion] = useState<PrediccionDuracion | null>(null)
+  const [prediccion, setPrediccion] = useState<PrediccionDuracion | PrediccionDuracionSolo | null>(null)
   const [mostrarCoeficientes, setMostrarCoeficientes] = useState(false)
 
   useEffect(() => {
     getJuegosPredecibles()
       .then(setJuegos)
       .catch((err) => showToast(err instanceof Error ? err.message : 'No se pudo cargar la lista de juegos', 'error'))
+  }, [])
 
-    getEntrenamientoDuracion()
+  useEffect(() => {
+    setCargandoEntrenamiento(true)
+    setPrediccion(null)
+    const cargar = modoSolo ? getEntrenamientoDuracionSolo : getEntrenamientoDuracion
+    cargar()
       .then(setEntrenamiento)
       .catch((err) => showToast(err instanceof Error ? err.message : 'No se pudo entrenar el modelo', 'error'))
       .finally(() => setCargandoEntrenamiento(false))
-  }, [])
+  }, [modoSolo])
 
   const juegoSeleccionado = juegos?.find((j) => j.nombre === juego) || null
   const minJug = juegoSeleccionado?.min_jugadores || 1
@@ -101,13 +113,15 @@ export function MlScreen() {
     setPrediciendo(true)
     setPrediccion(null)
     try {
-      const resultado = await predecirDuracion(
-        juego.trim(),
-        numJugadores,
-        lugarCategoria || undefined,
-        grupoSocial || undefined,
-        usaExpansion
-      )
+      const resultado = modoSolo
+        ? await predecirDuracionSolo(juego.trim())
+        : await predecirDuracion(
+            juego.trim(),
+            numJugadores,
+            lugarCategoria || undefined,
+            grupoSocial || undefined,
+            usaExpansion
+          )
       setPrediccion(resultado)
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'No se pudo predecir la duración', 'error')
@@ -122,9 +136,27 @@ export function MlScreen() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-      <div className="flex items-center gap-2">
-        <Brain className="w-5 h-5 text-muted-foreground" />
-        <h1 className="text-lg font-semibold">Predicción de duración</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Brain className="w-5 h-5 text-muted-foreground" />
+          <h1 className="text-lg font-semibold">Predicción de duración</h1>
+        </div>
+        <div className="flex items-center rounded-lg border p-0.5 text-xs">
+          <button
+            type="button"
+            onClick={() => setModoSolo(false)}
+            className={`px-2.5 py-1 rounded-md transition-colors ${!modoSolo ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
+          >
+            Normal
+          </button>
+          <button
+            type="button"
+            onClick={() => setModoSolo(true)}
+            className={`px-2.5 py-1 rounded-md transition-colors ${modoSolo ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
+          >
+            Solo
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handlePredecir} className="rounded-lg border bg-card p-3 space-y-3">
@@ -144,6 +176,14 @@ export function MlScreen() {
           </datalist>
         </div>
 
+        {modoSolo && (
+          <p className="text-xs text-muted-foreground">
+            Modo solitario: sin jugadores/lugar/grupo, el modelo usa min/max jugadores del juego (BGG) para
+            distinguir juegos solo puros de multijugador jugado con Automa.
+          </p>
+        )}
+
+        {!modoSolo && (
         <div>
           <label className="text-sm font-medium">Número de jugadores</label>
           <select
@@ -163,7 +203,9 @@ export function MlScreen() {
             </p>
           )}
         </div>
+        )}
 
+        {!modoSolo && (
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -173,7 +215,9 @@ export function MlScreen() {
           />
           Se va a usar expansión
         </label>
+        )}
 
+        {!modoSolo && (
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-sm font-medium">Lugar</label>
@@ -204,6 +248,7 @@ export function MlScreen() {
             </select>
           </div>
         </div>
+        )}
 
         <button
           type="submit"
@@ -217,7 +262,10 @@ export function MlScreen() {
 
       {prediccion && (
         <div className="rounded-lg border bg-card p-3 text-center">
-          <p className="text-xs text-muted-foreground">{prediccion.juego} · {prediccion.num_jugadores} jugadores</p>
+          <p className="text-xs text-muted-foreground">
+            {prediccion.juego}
+            {'num_jugadores' in prediccion ? ` · ${prediccion.num_jugadores} jugadores` : ' · solo'}
+          </p>
           <p className="text-3xl font-semibold mt-1">{prediccion.duracion_estimada_min} min</p>
           <p className="text-xs text-muted-foreground mt-1">± {prediccion.mae_modelo} min de margen de error típico</p>
         </div>
