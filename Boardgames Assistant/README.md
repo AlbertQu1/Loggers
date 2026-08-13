@@ -18,8 +18,11 @@ Necesita el backend corriendo aparte (`uvicorn source.api:app --host 0.0.0.0 --p
 
 ## Estructura
 
-- `app/preguntar` — pantalla principal, chat de preguntas/respuestas
-- `app/bg-stats` — placeholder, reservado para Fase 2
+- `app/preguntar` — chat de preguntas/respuestas (reglas + estadisticas via `query_sql`, Gemini elige la herramienta)
+- `app/bg-stats` — dashboard: resumen, top juegos, coleccion/gasto, clima, cuándo juegas (con probabilidad por dia, tu vs tu circulo de amigos), top lugares con mapa
+- `app/ml` — prediccion de duracion, toggle Normal/Solo (modelos separados, ver `components/screens/ml/ml-screen.tsx`)
+- `app/agregar` — subir/confirmar reglamentos nuevos (directo o via buzon de Drive)
+- `components/layout` — 3 badges en el header (amigos nuevos con BGG, lugares/fuentes de compra sin normalizar, partidas anonimas sin grupo social) — polling automatico, se resuelven desde ahi sin tocar la base a mano
 - `services/api` — unica capa que habla con el backend (nunca se llama a Postgres/Gemini directo desde aqui)
 
 Detalle completo del diseño en `docs/Boardgames_Assistant_PRD.md`.
