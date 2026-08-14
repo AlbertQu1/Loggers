@@ -6,13 +6,14 @@ import { toFlavor } from '@/lib/soda-mappings'
 // GET /api/flavors, which only returns what's currently selectable).
 // remaining_ml = ml purchased minus ml used across preparations logged
 // against that specific flavor row (NULL when ml wasn't tracked, e.g.
-// always_available flavors like Limon Natural).
+// always_available flavors like Limon Natural). p.ml is per-bottle, so a
+// multi-bottle preparation (bottles_prepared > 1) uses ml * bottles_prepared.
 export async function GET() {
   try {
     const { rows } = await pool.query(`
       SELECT f.*,
         CASE WHEN f.ml IS NOT NULL THEN
-          f.ml - COALESCE((SELECT SUM(p.ml) FROM soda_preparations p WHERE p.flavor_id = f.id), 0)
+          f.ml - COALESCE((SELECT SUM(p.ml * p.bottles_prepared) FROM soda_preparations p WHERE p.flavor_id = f.id), 0)
         END AS remaining_ml
       FROM soda_flavors f
       ORDER BY f.flavor_name, f.purchase_date DESC NULLS LAST
