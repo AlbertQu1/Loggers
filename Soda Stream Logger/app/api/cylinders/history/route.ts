@@ -14,7 +14,7 @@ export async function GET() {
       LEFT JOIN soda_preparations p ON p.cylinder_id = c.id
       WHERE c.status IN ('CLOSED', 'ACTIVE')
       GROUP BY c.id
-      ORDER BY c.id
+      ORDER BY c.id DESC
     `)
 
     const closed = cylinders.filter((c) => c.status === 'CLOSED')
