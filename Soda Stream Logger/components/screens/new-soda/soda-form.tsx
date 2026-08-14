@@ -83,10 +83,18 @@ export function SodaForm() {
   }, [])
 
   const totalShots = shotsLight + shotsMedium + shotsStrong
+  const selectedFlavor = flavorOptions.find((f) => f.id === selectedFlavorId)
+  const mlRequired = containsFlavor && !!selectedFlavorId && !selectedFlavor?.alwaysAvailable
+  const mlMissing = mlRequired && !ml
 
   const handleRegister = async () => {
     if (totalShots <= 0) {
       showToast('Please add at least one shot', 'warning')
+      return
+    }
+
+    if (mlMissing) {
+      showToast('Enter the ml used for this flavor', 'warning')
       return
     }
 
@@ -215,7 +223,9 @@ export function SodaForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Syrup (ml)</label>
+            <label className="block text-sm font-medium mb-2">
+              Syrup (ml){mlRequired ? ' *' : ''}
+            </label>
             <input
               type="number"
               inputMode="numeric"
@@ -231,7 +241,7 @@ export function SodaForm() {
       {/* Register Button */}
       <Button
         onClick={handleRegister}
-        disabled={isLoading || totalShots <= 0}
+        disabled={isLoading || totalShots <= 0 || mlMissing}
         className="w-full h-14 rounded-2xl text-base font-semibold"
       >
         {isLoading ? 'Recording...' : 'Record Soda'}
