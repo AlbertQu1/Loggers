@@ -24,6 +24,12 @@ Mobile-first PWA for asking board game rules in natural language — a chat clie
 
 **Stack:** Next.js (App Router) · React · TypeScript · Tailwind CSS · Python/FastAPI backend
 
+### 🤖 [Personal Assistant](./Personal%20Assistant)
+
+Mobile-first PWA for a personal "second brain" — a chat client for the personal-assistant RAG backend (notes vault, archived photos/media, and structured data from the other apps — vacations, coffee/soda consumption, boardgames — all queryable in natural language). Also has a "pendientes" screen for classifying files uploaded via a watched Drive folder before indexing, with special handling for event media (concerts, trips) archived by venue/artist or destination.
+
+**Stack:** Next.js (App Router) · React · TypeScript · Tailwind CSS · Python/FastAPI backend
+
 ## Why this exists
 
 These apps replace ad-hoc spreadsheet tracking with purpose-built tools: fast mobile data entry, offline-first sync, and a real relational schema underneath — so the data is actually usable for analysis later, not just logged and forgotten.
