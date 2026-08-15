@@ -1,0 +1,26 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @media (prefers-color-scheme: light) {
+      .background { fill: black; }
+      .foreground { fill: white; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .background { fill: white; }
+      .foreground { fill: black; }
+    }
+  </style>
+  <rect class="background" width="180" height="180" rx="37" />
+  <!-- antena -->
+  <line x1="90" y1="30" x2="90" y2="44" class="foreground" stroke-width="6" stroke-linecap="round" />
+  <circle class="foreground" cx="90" cy="26" r="7" />
+  <!-- cabeza -->
+  <rect class="foreground" x="42" y="48" width="96" height="82" rx="20" />
+  <!-- ojos -->
+  <circle class="background" cx="70" cy="88" r="9" />
+  <circle class="background" cx="110" cy="88" r="9" />
+  <!-- boca -->
+  <rect class="background" x="66" y="108" width="48" height="8" rx="4" />
+  <!-- antenas laterales -->
+  <rect class="foreground" x="30" y="76" width="12" height="24" rx="6" />
+  <rect class="foreground" x="138" y="76" width="12" height="24" rx="6" />
+</svg>

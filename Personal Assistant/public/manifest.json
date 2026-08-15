@@ -1,0 +1,20 @@
+{
+  "name": "Personal Assistant",
+  "short_name": "🤖 Asistente",
+  "description": "Tu wiki personal — notas, fotos y datos, en un solo lugar para preguntar",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["utilities", "productivity"]
+}
