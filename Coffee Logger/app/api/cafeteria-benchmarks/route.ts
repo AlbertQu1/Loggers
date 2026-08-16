@@ -8,6 +8,8 @@ function toBenchmark(row: any) {
     cafeteriaName: row.cafeteria_name,
     city: row.city,
     price: Number(row.price),
+    latitude: row.latitude !== null ? Number(row.latitude) : null,
+    longitude: row.longitude !== null ? Number(row.longitude) : null,
     createdAt: row.created_at.toISOString(),
   }
 }
@@ -30,7 +32,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { cafeteriaName, city, price } = body
+    const { cafeteriaName, city, price, latitude, longitude } = body
 
     if (!cafeteriaName || price === undefined || price === null) {
       return NextResponse.json(
@@ -40,10 +42,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { rows } = await pool.query(
-      `INSERT INTO cafeteria_benchmarks (cafeteria_name, city, price)
-       VALUES ($1, $2, $3)
+      `INSERT INTO cafeteria_benchmarks (cafeteria_name, city, price, latitude, longitude)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [cafeteriaName, city || 'CDMX', price]
+      [cafeteriaName, city || 'CDMX', price, latitude ?? null, longitude ?? null]
     )
 
     return NextResponse.json({ success: true, data: toBenchmark(rows[0]) })

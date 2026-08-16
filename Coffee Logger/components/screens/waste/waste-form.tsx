@@ -55,6 +55,10 @@ export function WasteForm() {
   const [benchmarkName, setBenchmarkName] = useState('')
   const [benchmarkCity, setBenchmarkCity] = useState('CDMX')
   const [benchmarkPrice, setBenchmarkPrice] = useState('')
+  const [benchmarkLat, setBenchmarkLat] = useState<number | null>(null)
+  const [benchmarkLng, setBenchmarkLng] = useState<number | null>(null)
+  const [isLocating, setIsLocating] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(null)
   const [isSubmittingBenchmark, setIsSubmittingBenchmark] = useState(false)
   const [currentYearAverage, setCurrentYearAverage] = useState<number | null>(null)
   const [benchmarkCityOptions, setBenchmarkCityOptions] = useState<PurchaseLocation[]>([])
@@ -185,6 +189,31 @@ export function WasteForm() {
     }
   }
 
+  const handleUseLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Este navegador no soporta geolocalización.')
+      return
+    }
+    setIsLocating(true)
+    setLocationError(null)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setBenchmarkLat(position.coords.latitude)
+        setBenchmarkLng(position.coords.longitude)
+        setIsLocating(false)
+      },
+      (error) => {
+        setLocationError(
+          error.code === error.PERMISSION_DENIED
+            ? 'Permiso de ubicación denegado.'
+            : 'No se pudo obtener la ubicación.'
+        )
+        setIsLocating(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
   const handleSubmitBenchmark = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -202,12 +231,17 @@ export function WasteForm() {
         cafeteriaName: benchmarkName,
         city: benchmarkCity || 'CDMX',
         price: priceValue,
+        latitude: benchmarkLat ?? undefined,
+        longitude: benchmarkLng ?? undefined,
       })
 
       showToast('Benchmark recorded.', 'success')
 
       setBenchmarkName('')
       setBenchmarkPrice('')
+      setBenchmarkLat(null)
+      setBenchmarkLng(null)
+      setLocationError(null)
       await loadBenchmarkAverage()
     } catch (error) {
       showToast('Unable to connect to the server. Please try again.', 'error')
@@ -493,6 +527,26 @@ export function WasteForm() {
                 placeholder="Enter price"
                 className="w-full px-4 py-3 rounded-xl border bg-secondary"
               />
+            </div>
+
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Location
+              </label>
+              <button
+                type="button"
+                onClick={handleUseLocation}
+                disabled={isLocating}
+                className="w-full px-4 py-3 rounded-xl border bg-secondary text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {isLocating
+                  ? 'Getting location...'
+                  : benchmarkLat !== null
+                    ? `📍 Location captured (${benchmarkLat.toFixed(4)}, ${benchmarkLng!.toFixed(4)})`
+                    : '📍 Use my location'}
+              </button>
+              {locationError && <p className="text-xs text-red-500 mt-2">{locationError}</p>}
             </div>
 
             <Button

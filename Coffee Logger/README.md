@@ -107,6 +107,7 @@ export async function registerCup(payload: CreateCupPayload): Promise<Cup> {
 - `POST /cups` - Register cup of coffee
 - `POST /waste` - Record waste event
 - `GET /history` - Fetch activity timeline
+- `GET /cafeteria-benchmarks` / `POST /cafeteria-benchmarks` - Price benchmark entries (`cafeteriaName`, `city`, `price`, optional `latitude`/`longitude` captured via the browser's Geolocation API on the Benchmark tab — requires a secure context, see Access below)
 
 ## Offline Support
 
@@ -175,6 +176,18 @@ Always visible in the header:
    - Optional filters (ground coffee, cold, with milk)
    - Icons for different event types
    - Timestamps
+
+5. **Machine Care → Benchmark** (tab inside the Care/Maintenance screen, `components/screens/waste/waste-form.tsx`)
+   - Log a cafeteria's double espresso price (name, city, price)
+   - "📍 Use my location" captures lat/lng via the browser Geolocation API and stores it with the entry — only works over HTTPS/localhost (see Access below)
+   - Shows the running average price for the current year
+
+## Access
+
+The dev/systemd process binds `127.0.0.1:3010`. Two ways to reach it:
+
+- **Plain HTTP via Caddy**: `http://<tailscale-ip>:3000` (`/etc/caddy/Caddyfile` reverse-proxies `:3000` → `127.0.0.1:3010`). Fine for most screens, but the browser will refuse Geolocation on this origin (insecure context).
+- **HTTPS via Tailscale Serve**: `https://albertqu.tailfca842.ts.net:8443` (`sudo tailscale serve --bg --https=8443 http://127.0.0.1:3010`, requires "HTTPS Certificates" enabled at [login.tailscale.com/admin/dns](https://login.tailscale.com/admin/dns)). Use this one for the Benchmark tab's location capture.
 
 ## Development
 

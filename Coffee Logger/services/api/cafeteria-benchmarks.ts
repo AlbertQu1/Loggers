@@ -19,6 +19,8 @@ export interface RegisterCafeteriaBenchmarkPayload {
   cafeteriaName: string
   city: string
   price: number
+  latitude?: number
+  longitude?: number
 }
 
 export async function registerCafeteriaBenchmark(

@@ -108,6 +108,8 @@ export interface CafeteriaBenchmark {
   cafeteriaName: string
   city: string
   price: number
+  latitude: number | null
+  longitude: number | null
   createdAt: string
 }
 
