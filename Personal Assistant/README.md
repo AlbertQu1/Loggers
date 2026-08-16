@@ -18,8 +18,10 @@ Necesita el backend corriendo aparte (`uvicorn source.api:app --host 0.0.0.0 --p
 
 ## Estructura
 
-- `app/preguntar` — chat de preguntas/respuestas. El backend elige entre tres herramientas segun la pregunta: `search_notes` (un hecho puntual en una nota indexada), `query_casa_sql` (estadisticas estructuradas: vacaciones, consumo, juegos de mesa), `query_graph` (cruces entre varias notas/eventos, ej. "a que eventos ha ido X"). Fuentes citadas siempre, expandibles.
+- `app/preguntar` — chat de preguntas/respuestas. El backend elige entre tres herramientas segun la pregunta: `search_notes` (un hecho puntual en una nota indexada), `query_casa_sql` (estadisticas estructuradas: vacaciones, consumo, juegos de mesa — **no** incluye Coffee Logger, que vive en una base `test` separada sin acceso), `query_graph` (cruces entre varias notas/eventos, ej. "a que eventos ha ido X"). El system prompt incluye la fecha de hoy en cada request para resolver referencias relativas ("ayer", "manana"). Manda las ultimas 6 preguntas/respuestas de vuelta en cada turno para mantener contexto de la conversacion. Fuentes citadas siempre, expandibles. Respuestas renderizadas como markdown (`react-markdown`).
+- `app/diario` — captura directa de entradas de diario sin pasar por SilverBullet: el texto se guarda con formato ligero (encabezado con fecha en español + parrafos) y se indexa de inmediato.
 - `app/pendientes` — archivos descargados de la carpeta "Wiki Inbox" de Drive (via n8n) esperando clasificacion: eliges `doc_type` (trabajo, escuela, receta, manual, diario, concierto, viaje, otro), y para `concierto`/`viaje` pides venue+artista o destino para que el backend archive el archivo original en la carpeta correspondiente. Badge de conteo en la barra inferior.
+- `app/personas` — buzon de nombres mencionados en notas con un candidato plausible en tu roster de jugadores (fuzzy match, `pg_trgm`) esperando confirmar/descartar. Badge de conteo en la barra inferior.
 - `components/layout` — nav inferior + indicador de salud del backend (poll cada 30s)
 - `services/api` — unica capa que habla con el backend (nunca se llama a Postgres/Gemini directo desde aqui)
 

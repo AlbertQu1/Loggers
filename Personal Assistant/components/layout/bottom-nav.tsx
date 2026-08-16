@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageCircleQuestion, Inbox } from 'lucide-react'
+import { MessageCircleQuestion, Inbox, UserCheck, BookOpen } from 'lucide-react'
 import { usePendientesCount } from '@/hooks/use-pendientes-count'
+import { usePersonasPendientesCount } from '@/hooks/use-personas-pendientes-count'
 
 const NAV_ITEMS = [
   {
@@ -12,15 +13,31 @@ const NAV_ITEMS = [
     icon: MessageCircleQuestion,
   },
   {
+    href: '/diario',
+    label: 'Diario',
+    icon: BookOpen,
+  },
+  {
     href: '/pendientes',
     label: 'Pendientes',
     icon: Inbox,
+  },
+  {
+    href: '/personas',
+    label: 'Personas',
+    icon: UserCheck,
   },
 ]
 
 export function BottomNav() {
   const pathname = usePathname()
   const pendientesCount = usePendientesCount()
+  const personasPendientesCount = usePersonasPendientesCount()
+
+  const badgeCounts: Record<string, number> = {
+    '/pendientes': pendientesCount,
+    '/personas': personasPendientesCount,
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,7 +45,8 @@ export function BottomNav() {
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href || pathname.startsWith(item.href)
-          const showBadge = item.href === '/pendientes' && pendientesCount > 0
+          const count = badgeCounts[item.href] ?? 0
+          const showBadge = count > 0
 
           return (
             <Link
@@ -43,7 +61,7 @@ export function BottomNav() {
                 <Icon className="w-5 h-5" />
                 {showBadge && (
                   <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-medium flex items-center justify-center">
-                    {pendientesCount}
+                    {count}
                   </span>
                 )}
               </span>
