@@ -14,13 +14,26 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
   }
 }
 
-export async function askQuestion(pregunta: string, juego?: string): Promise<AskResponse> {
+export interface HistorialTurno {
+  pregunta: string
+  respuesta: string
+}
+
+export async function askQuestion(
+  pregunta: string,
+  juego?: string,
+  historial?: HistorialTurno[]
+): Promise<AskResponse> {
   const response = await fetchWithTimeout(
     `${API_BASE_URL}/ask`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(juego ? { pregunta, juego } : { pregunta }),
+      body: JSON.stringify({
+        pregunta,
+        ...(juego ? { juego } : {}),
+        ...(historial && historial.length > 0 ? { historial } : {}),
+      }),
     },
     ASK_TIMEOUT
   )

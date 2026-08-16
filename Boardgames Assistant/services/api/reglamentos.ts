@@ -1,15 +1,26 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
 
-export interface BggLookupResponse {
-  encontrado: boolean
-  nombre?: string
+export interface BggResultado {
+  bgg_id: number
+  /** Nombre a usar: el de tu biblioteca de BG Stats si el juego ya esta ahi, si no el de BGG. */
+  nombre: string
+  nombre_bgg: string
+  anio: number | null
+  es_expansion: boolean
+  thumbnail: string | null
+  num_calificaciones: number | null
+  en_biblioteca: boolean
+  ya_indexado: boolean
 }
 
-export async function bggLookup(url: string): Promise<BggLookupResponse> {
-  const response = await fetch(`${API_BASE_URL}/juegos/bgg-lookup?url=${encodeURIComponent(url)}`)
+export async function bggBuscar(q: string, signal?: AbortSignal): Promise<BggResultado[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/juegos/bgg-buscar?q=${encodeURIComponent(q)}&limite=8`,
+    { signal },
+  )
   if (!response.ok) {
     const body = await response.json().catch(() => null)
-    throw new Error(body?.detail || `No se pudo buscar el juego (${response.status})`)
+    throw new Error(body?.detail || `No se pudo buscar en BGG (${response.status})`)
   }
   return response.json()
 }

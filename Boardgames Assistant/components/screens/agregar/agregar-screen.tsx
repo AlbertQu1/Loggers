@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, Upload, Loader2, FileText, X, Trash2, Eye } from 'lucide-react'
+import { Upload, Loader2, FileText, X, Trash2, Eye } from 'lucide-react'
 import { getJuegosCatalogo } from '@/services/api/ask'
 import {
-  bggLookup,
   subirReglamento,
   getPendientes,
   confirmarReglamento,
@@ -18,10 +17,6 @@ export function AgregarScreen() {
   const [catalogo, setCatalogo] = useState<string[]>([])
   const [pendientes, setPendientes] = useState<string[]>([])
   const [pendienteActivo, setPendienteActivo] = useState<string | null>(null)
-
-  const [bggUrl, setBggUrl] = useState('')
-  const [buscandoBgg, setBuscandoBgg] = useState(false)
-  const [bggEncontrado, setBggEncontrado] = useState<boolean | null>(null)
 
   const [juego, setJuego] = useState('')
   const [idioma, setIdioma] = useState('es')
@@ -68,29 +63,10 @@ export function AgregarScreen() {
   }, [])
 
   function limpiarForm() {
-    setBggUrl('')
-    setBggEncontrado(null)
     setJuego('')
     setJuegoBase('')
     setArchivo(null)
     setPendienteActivo(null)
-  }
-
-  async function handleBuscarBgg() {
-    if (!bggUrl.trim()) return
-    setBuscandoBgg(true)
-    setBggEncontrado(null)
-    try {
-      const result = await bggLookup(bggUrl.trim())
-      setBggEncontrado(result.encontrado)
-      if (result.encontrado && result.nombre) {
-        setJuego(result.nombre)
-      }
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Error buscando en BGG', 'error')
-    } finally {
-      setBuscandoBgg(false)
-    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -146,8 +122,6 @@ export function AgregarScreen() {
                   onClick={() => {
                     setPendienteActivo(nombre)
                     setArchivo(null)
-                    setBggUrl('')
-                    setBggEncontrado(null)
                   }}
                   className="flex-1 flex items-center gap-2 text-left text-sm px-3 py-2 min-w-0"
                 >
@@ -176,43 +150,11 @@ export function AgregarScreen() {
         </div>
       )}
 
-      <div>
-        <label className="text-sm font-medium">Link de BGG (opcional)</label>
-        <p className="text-xs text-muted-foreground mb-2">
-          Solo encuentra el nombre si el juego ya esta en tu biblioteca de BG Stats.
-        </p>
-        <div className="flex gap-2">
-          <input
-            value={bggUrl}
-            onChange={(e) => setBggUrl(e.target.value)}
-            placeholder="boardgamegeek.com/boardgame/..."
-            className="flex-1 rounded-lg border bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <button
-            type="button"
-            onClick={handleBuscarBgg}
-            disabled={buscandoBgg || !bggUrl.trim()}
-            className="rounded-lg border px-3 py-2 text-sm flex items-center gap-1 disabled:opacity-40"
-          >
-            {buscandoBgg ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            Buscar
-          </button>
-        </div>
-        {bggEncontrado === true && (
-          <p className="text-xs text-green-600 dark:text-green-400 mt-1">Encontrado en tu biblioteca.</p>
-        )}
-        {bggEncontrado === false && (
-          <p className="text-xs text-muted-foreground mt-1">
-            No encontrado en tu biblioteca — escribe el nombre manualmente.
-          </p>
-        )}
-      </div>
-
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
           <label className="text-sm font-medium">Juego</label>
           <p className="text-xs text-muted-foreground mb-1">
-            Busca en tu biblioteca para evitar nombres distintos al mismo juego.
+            Busca en tu biblioteca y en BGG — elige de la lista para no acabar con dos nombres del mismo juego.
           </p>
           <JuegoCatalogoSelector catalogo={catalogo} value={juego} onChange={setJuego} />
         </div>

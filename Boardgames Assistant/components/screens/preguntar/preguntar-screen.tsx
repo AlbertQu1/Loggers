@@ -38,8 +38,12 @@ export function PreguntarScreen() {
   async function runTurn(turn: ChatTurn) {
     setTurns((prev) => prev.map((t) => (t.id === turn.id ? { ...t, loading: true, error: undefined } : t)))
 
+    const historial = turns
+      .filter((t) => t.id !== turn.id && t.respuesta && !t.error)
+      .map((t) => ({ pregunta: t.pregunta, respuesta: t.respuesta! }))
+
     try {
-      const data = await askQuestion(turn.pregunta, turn.juego)
+      const data = await askQuestion(turn.pregunta, turn.juego, historial)
       setTurns((prev) =>
         prev.map((t) =>
           t.id === turn.id
