@@ -1,6 +1,7 @@
 import { ChatTurn } from '@/types'
 import { Loader2, AlertCircle, ChevronDown } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import { MermaidDiagram } from '@/components/common/mermaid-diagram'
 
 const MARKDOWN_COMPONENTS = {
   p: (props: React.ComponentProps<'p'>) => <p className="mb-2 last:mb-0" {...props} />,
@@ -12,9 +13,23 @@ const MARKDOWN_COMPONENTS = {
   h3: (props: React.ComponentProps<'h3'>) => <h3 className="text-sm font-semibold mt-2 mb-1 first:mt-0" {...props} />,
   strong: (props: React.ComponentProps<'strong'>) => <strong className="font-semibold" {...props} />,
   hr: () => <hr className="my-3 border-muted" />,
-  code: (props: React.ComponentProps<'code'>) => (
-    <code className="rounded bg-muted px-1 py-0.5 text-xs" {...props} />
-  ),
+  pre: (props: React.ComponentProps<'pre'>) => {
+    const child = props.children as React.ReactElement<{ className?: string }> | undefined
+    if (child?.props?.className?.includes('language-mermaid')) {
+      return <>{props.children}</>
+    }
+    return <pre {...props} />
+  },
+  code: ({ className, children, ...props }: React.ComponentProps<'code'>) => {
+    if (className?.includes('language-mermaid')) {
+      return <MermaidDiagram chart={String(children)} />
+    }
+    return (
+      <code className="rounded bg-muted px-1 py-0.5 text-xs" {...props}>
+        {children}
+      </code>
+    )
+  },
   a: (props: React.ComponentProps<'a'>) => (
     <a className="underline underline-offset-2" target="_blank" rel="noopener noreferrer" {...props} />
   ),

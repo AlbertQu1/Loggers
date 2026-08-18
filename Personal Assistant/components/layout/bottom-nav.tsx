@@ -2,9 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageCircleQuestion, Inbox, UserCheck, BookOpen } from 'lucide-react'
+import { MessageCircleQuestion, Inbox, BookOpen } from 'lucide-react'
 import { usePendientesCount } from '@/hooks/use-pendientes-count'
-import { usePersonasPendientesCount } from '@/hooks/use-personas-pendientes-count'
 
 const NAV_ITEMS = [
   {
@@ -22,21 +21,14 @@ const NAV_ITEMS = [
     label: 'Pendientes',
     icon: Inbox,
   },
-  {
-    href: '/personas',
-    label: 'Personas',
-    icon: UserCheck,
-  },
 ]
 
 export function BottomNav() {
   const pathname = usePathname()
   const pendientesCount = usePendientesCount()
-  const personasPendientesCount = usePersonasPendientesCount()
 
   const badgeCounts: Record<string, number> = {
     '/pendientes': pendientesCount,
-    '/personas': personasPendientesCount,
   }
 
   return (

@@ -75,6 +75,20 @@ export interface PersonaUpdate {
   notas?: string
 }
 
+export const TIPOS_FECHA = ['cumpleanos', 'aniversario', 'otra'] as const
+export type TipoFecha = (typeof TIPOS_FECHA)[number]
+
+export interface FechaPendiente {
+  id: number
+  persona: string
+  mes: number
+  dia: number
+  ano: number | null
+  contexto: string | null
+  tipo: TipoFecha
+  nota_source: string
+}
+
 export interface Cumpleanos {
   id: number
   nombre_canonico: string

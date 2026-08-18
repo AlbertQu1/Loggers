@@ -20,13 +20,13 @@ Mobile-first PWA for logging soda-carbonation usage: pour intensity, flavor syru
 
 ### 🎲 [Boardgames Assistant](./Boardgames%20Assistant)
 
-Mobile-first PWA for asking board game rules in natural language — a chat client for the [boardgames-assistant](https://github.com/AlbertQu1/boardgames-assistant) RAG backend (PDF/DOCX rulebooks → pgvector → Gemini). Second tab reserved for BG Stats (play analytics), not built yet.
+Mobile-first PWA for asking board game rules in natural language — a chat client for the [boardgames-assistant](https://github.com/AlbertQu1/boardgames-assistant) RAG backend (PDF/DOCX rulebooks → pgvector → Gemini). Also has BG Stats (play analytics dashboard), ML (game session duration prediction), and Agregar (upload/confirm new rulebooks, searching BGG live).
 
 **Stack:** Next.js (App Router) · React · TypeScript · Tailwind CSS · Python/FastAPI backend
 
 ### 🤖 [Personal Assistant](./Personal%20Assistant)
 
-Mobile-first PWA for a personal "second brain" — a chat client for the personal-assistant RAG backend (notes vault, archived photos/media, and structured data from the other apps — vacations, coffee/soda consumption, boardgames — all queryable in natural language). Also has a "pendientes" screen for classifying files uploaded via a watched Drive folder before indexing, with special handling for event media (concerts, trips) archived by venue/artist or destination.
+Mobile-first PWA for a personal "second brain" — a chat client for the personal-assistant RAG backend (notes vault, archived photos/media, and structured data from the other apps — vacations, coffee/soda consumption, boardgames — all queryable in natural language), now able to answer relationship/structure questions about your social graph with a Mermaid diagram it generates itself. Also has: a "Diario" tab for writing journal entries directly (light auto-formatting, indexed immediately); and a single unified "Pendientes" inbox covering everything awaiting your review — files uploaded via a watched Drive folder before indexing, fuzzy name matches found in notes against your board-game roster, and birthdays/dates detected in journal entries (nothing auto-saved, always requires confirmation).
 
 **Stack:** Next.js (App Router) · React · TypeScript · Tailwind CSS · Python/FastAPI backend
 

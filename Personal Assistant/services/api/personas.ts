@@ -1,4 +1,4 @@
-import { PersonaPendiente, Persona, PersonaInput, PersonaUpdate, Cumpleanos } from '@/types'
+import { PersonaPendiente, Persona, PersonaInput, PersonaUpdate, Cumpleanos, FechaPendiente, TipoFecha } from '@/types'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8002'
 
@@ -46,8 +46,12 @@ export async function getPersonasPendientes(): Promise<PersonaPendiente[]> {
   return response.json()
 }
 
-export async function confirmarPersonaPendiente(id: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/personas/pendientes/${id}/confirmar`, { method: 'POST' })
+export async function confirmarPersonaPendiente(id: number, relacion?: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/personas/pendientes/${id}/confirmar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ relacion: relacion || null }),
+  })
   if (!response.ok) {
     const body = await response.json().catch(() => null)
     throw new Error(body?.detail || `No se pudo confirmar (${response.status})`)
@@ -56,6 +60,32 @@ export async function confirmarPersonaPendiente(id: number): Promise<void> {
 
 export async function rechazarPersonaPendiente(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/personas/pendientes/${id}/rechazar`, { method: 'POST' })
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+    throw new Error(body?.detail || `No se pudo rechazar (${response.status})`)
+  }
+}
+
+export async function getFechasPendientes(): Promise<FechaPendiente[]> {
+  const response = await fetch(`${API_BASE_URL}/personas/fechas/pendientes`)
+  if (!response.ok) throw new Error(`No se pudo cargar la lista de fechas pendientes (${response.status})`)
+  return response.json()
+}
+
+export async function confirmarFechaPendiente(id: number, tipo: TipoFecha): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/personas/fechas/pendientes/${id}/confirmar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo }),
+  })
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+    throw new Error(body?.detail || `No se pudo confirmar (${response.status})`)
+  }
+}
+
+export async function rechazarFechaPendiente(id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/personas/fechas/pendientes/${id}/rechazar`, { method: 'POST' })
   if (!response.ok) {
     const body = await response.json().catch(() => null)
     throw new Error(body?.detail || `No se pudo rechazar (${response.status})`)
