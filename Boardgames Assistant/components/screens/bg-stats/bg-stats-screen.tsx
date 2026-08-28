@@ -17,6 +17,7 @@ import { CuandoJuegasCard } from './cuando-juegas-card'
 import { ClimaCard } from './clima-card'
 import { TopLugaresCard } from './top-lugares-card'
 import { ColeccionCard } from './coleccion-card'
+import { BibliotecaCard } from './biblioteca-card'
 
 function formatFecha(fecha: string | null) {
   if (!fecha) return 'sin partidas'
@@ -139,6 +140,7 @@ export function BgStatsScreen() {
       {clima && <ClimaCard clima={clima} />}
       {topLugares && topLugares.length > 0 && <TopLugaresCard items={topLugares} />}
       <ColeccionCard />
+      <BibliotecaCard />
 
       <div className="rounded-lg border bg-card p-3">
         <div className="flex items-center gap-2 mb-1">

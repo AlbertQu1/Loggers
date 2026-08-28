@@ -257,3 +257,45 @@ export async function predecirDuracionSolo(juego: string): Promise<PrediccionDur
   }
   return response.json()
 }
+
+export interface PerfilPeso {
+  rango: string
+  juegos: number
+  partidas: number
+  duracion_prom_min: number | null
+  pct_victoria: number | null
+  minutos: number
+  minutos_solo: number
+  minutos_multi: number
+}
+
+export interface ModoStats {
+  partidas: number
+  duracion_min: number | null
+  pct_victoria: number | null
+}
+
+export interface SoloVsMulti {
+  juego: string
+  peso: number | null
+  multi: ModoStats
+  solo: ModoStats
+}
+
+export interface MecanicaStats {
+  mecanica: string
+  partidas: number
+  juegos: number
+}
+
+export interface Biblioteca {
+  por_peso: PerfilPeso[]
+  solo_vs_multi: SoloVsMulti[]
+  mecanicas: MecanicaStats[]
+}
+
+export async function getBiblioteca(): Promise<Biblioteca> {
+  const response = await fetch(`${API_BASE_URL}/bgstats/biblioteca`)
+  if (!response.ok) throw new Error(`No se pudo cargar el perfil de la biblioteca (${response.status})`)
+  return response.json()
+}

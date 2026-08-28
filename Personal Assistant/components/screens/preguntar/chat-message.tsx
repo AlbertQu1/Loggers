@@ -33,6 +33,10 @@ const MARKDOWN_COMPONENTS = {
   a: (props: React.ComponentProps<'a'>) => (
     <a className="underline underline-offset-2" target="_blank" rel="noopener noreferrer" {...props} />
   ),
+  img: (props: React.ComponentProps<'img'>) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img className="rounded-lg max-w-[200px] max-h-[200px] object-cover my-1" loading="lazy" {...props} />
+  ),
 }
 
 export function ChatMessage({ turn, onRetry }: { turn: ChatTurn; onRetry: (turn: ChatTurn) => void }) {
