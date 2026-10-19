@@ -166,6 +166,7 @@ Always visible in the header:
    - Available bags to open (only one active at a time)
    - Closed bags archive
    - FAB to create new bag
+   - Gifts: checking "This is a gift" sets price to 0 and the location to **Regalo** (the Purchase City selector is hidden). The API enforces the same rule both ways (`is_gift` ⇔ location `Regalo`), and the bookkeeping locations `Anual`/`Regalo` never appear in the city dropdown
 
 3. **Waste**
    - Select affected bag

@@ -67,7 +67,10 @@ export function CreateBagModal({ open, onOpenChange, onSuccess }: CreateBagModal
     setIsLoading(true)
 
     try {
-      const purchaseCity = formData.purchaseCityEnabled
+      // Gifts always go to the "Regalo" location, never a city
+      const purchaseCity = formData.gift
+        ? 'Regalo'
+        : formData.purchaseCityEnabled
         ? formData.purchaseCity === 'Other'
           ? formData.purchaseCityCustom
           : formData.purchaseCity
@@ -200,20 +203,26 @@ export function CreateBagModal({ open, onOpenChange, onSuccess }: CreateBagModal
             <span className="text-sm font-medium">This is a gift</span>
           </label>
 
-          {/* Purchase City Toggle */}
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              name="purchaseCityEnabled"
-              checked={formData.purchaseCityEnabled}
-              onChange={handleInputChange}
-              className="w-4 h-4 rounded"
-            />
-            <span className="text-sm font-medium">Purchase City</span>
-          </label>
+          {formData.gift && (
+            <p className="text-sm text-muted-foreground pl-7">Location: Regalo</p>
+          )}
+
+          {/* Purchase City Toggle - hidden for gifts */}
+          {!formData.gift && (
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="purchaseCityEnabled"
+                checked={formData.purchaseCityEnabled}
+                onChange={handleInputChange}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm font-medium">Purchase City</span>
+            </label>
+          )}
 
           {/* Purchase City Dropdown - Only show if enabled */}
-          {formData.purchaseCityEnabled && (
+          {!formData.gift && formData.purchaseCityEnabled && (
             <div className="space-y-3 pl-7 border-l-2 border-secondary">
               <select
                 name="purchaseCity"
@@ -221,7 +230,9 @@ export function CreateBagModal({ open, onOpenChange, onSuccess }: CreateBagModal
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 rounded-xl border bg-secondary"
               >
-                {locations.map((location) => (
+                {locations
+                  .filter((location) => !['Anual', 'Regalo'].includes(location.name))
+                  .map((location) => (
                   <option key={location.id} value={location.name}>
                     {location.name}
                   </option>

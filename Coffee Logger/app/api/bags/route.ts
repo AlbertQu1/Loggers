@@ -30,14 +30,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
     }
 
-    const locationName = city || 'CDMX'
+    // A gift's location is always "Regalo", whatever city came in, and
+    // "Regalo" as a location always means a gift -- keeps both fields in sync
+    const isGift = !!gift || (city || '').toLowerCase() === 'regalo'
+    const locationName = isGift ? 'Regalo' : city || 'CDMX'
     const locationId = await getOrCreatePurchaseLocationId(locationName)
 
     const { rows } = await pool.query(
       `INSERT INTO coffee_bags (coffee_name, roaster, purchase_date, weight_grams, price, is_gift, purchase_location_id, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [name, roaster || null, purchaseDate || null, weight, price, !!gift, locationId, notes || null]
+      [name, roaster || null, purchaseDate || null, weight, isGift ? 0 : price, isGift, locationId, notes || null]
     )
 
     return NextResponse.json({
