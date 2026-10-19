@@ -25,6 +25,7 @@ export interface CreateCupPayload {
   withMilk: boolean
   useGroundCoffee: boolean
   activeBagId?: string
+  noCoffee: boolean
   contains_alcohol: boolean
   alcohol_types?: string[]
   contains_flavor: boolean

@@ -148,6 +148,39 @@ export function toBag(row: any) {
   }
 }
 
+// Server-side fallback for the annual "Molido <year>" ground-coffee bag.
+// The frontend already tries to resolve this and send it as activeBagId
+// (see cup-form.tsx's isUsingGroundCoffee logic), but if that ever fails to
+// load in time, the backend must not silently accept a cup with no bag_id
+// at all -- every cup has to be attributable to some bag. Shares the same
+// get-or-create logic as app/api/ground-coffee/route.ts.
+export async function getOrCreateAnnualGroundCoffeeBagId(): Promise<number> {
+  const year = new Date().getFullYear()
+  const bagName = `Molido ${year}`
+
+  const existing = await pool.query(
+    `SELECT cb.id
+     FROM coffee_bags cb
+     JOIN purchase_locations pl ON pl.id = cb.purchase_location_id
+     WHERE cb.coffee_name = $1 AND pl.name = 'Anual'`,
+    [bagName]
+  )
+  if (existing.rows.length > 0) return existing.rows[0].id
+
+  const locationId = await getOrCreatePurchaseLocationId('Anual')
+  const jan1 = `${year}-01-01`
+  const dec31 = `${year}-12-31`
+
+  const { rows } = await pool.query(
+    `INSERT INTO coffee_bags
+       (coffee_name, roaster, purchase_date, weight_grams, price, is_gift, purchase_location_id, notes, opened_date, closed_date, status)
+     VALUES ($1, '', $2, 0, 0, false, $3, $4, $5, $6, 'CLOSED')
+     RETURNING id`,
+    [bagName, jan1, locationId, 'Annual virtual bag for ground coffee tracking', jan1, dec31]
+  )
+  return rows[0].id
+}
+
 export async function getOrCreatePurchaseLocationId(name: string): Promise<number> {
   const existing = await pool.query(
     'SELECT id FROM purchase_locations WHERE lower(name) = lower($1)',

@@ -5,6 +5,7 @@ import {
   resolveAlcoholTypes,
   resolveFlavors,
   promoteFrequentOtherFlavors,
+  getOrCreateAnnualGroundCoffeeBagId,
 } from '@/lib/coffee-mappings'
 
 export async function POST(request: NextRequest) {
@@ -17,6 +18,7 @@ export async function POST(request: NextRequest) {
       withMilk,
       useGroundCoffee,
       activeBagId,
+      noCoffee,
       contains_alcohol,
       alcohol_types,
       contains_flavor,
@@ -28,6 +30,17 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Missing size' },
         { status: 400 }
       )
+    }
+
+    // Every cup must be attributable to a bag, except the legitimate
+    // no-coffee case (noCoffee=true), where bag_id must stay null. If
+    // activeBagId is missing for any other reason -- the frontend's ground-
+    // coffee fallback should have supplied it, but can't be trusted blindly
+    // if its own lookup raced or failed -- resolve the current year's
+    // "Molido <year>" bag here instead of silently storing an orphaned row.
+    let resolvedBagId = activeBagId || null
+    if (!resolvedBagId && !noCoffee) {
+      resolvedBagId = await getOrCreateAnnualGroundCoffeeBagId()
     }
 
     const cupSizeId = await getCupSizeId(size)
@@ -53,7 +66,7 @@ export async function POST(request: NextRequest) {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
-        activeBagId || null,
+        resolvedBagId,
         cupSizeId,
         cups_prepared || 1,
         !!withMilk,

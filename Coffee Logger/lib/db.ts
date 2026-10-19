@@ -10,6 +10,7 @@ const pool =
     database: process.env.PGDATABASE,
     user: process.env.PGUSER,
     password: process.env.PGPASSWORD,
+    options: process.env.PGSCHEMA ? `-c search_path=${process.env.PGSCHEMA}` : undefined,
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: 10000,
     max: 5,
