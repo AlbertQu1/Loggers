@@ -21,6 +21,7 @@ async function fetchWithTimeout(url: string, options?: RequestInit): Promise<Res
 export interface CreateCupPayload {
   size: CupSize
   cups_prepared: number
+  prepared_timestamp?: string
   cold: boolean
   withMilk: boolean
   useGroundCoffee: boolean

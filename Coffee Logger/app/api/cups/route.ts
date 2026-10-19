@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     const {
       size,
       cups_prepared,
+      prepared_timestamp,
       cold,
       withMilk,
       useGroundCoffee,
@@ -43,6 +44,14 @@ export async function POST(request: NextRequest) {
       resolvedBagId = await getOrCreateAnnualGroundCoffeeBagId()
     }
 
+    // Tap-time timestamp from the client (survives offline-queue retries).
+    // Anything missing, unparseable or in the future falls back to now().
+    const parsedTs = prepared_timestamp ? new Date(prepared_timestamp) : null
+    const preparedTs =
+      parsedTs && !isNaN(parsedTs.getTime()) && parsedTs.getTime() <= Date.now() + 5 * 60 * 1000
+        ? parsedTs.toISOString()
+        : null
+
     const cupSizeId = await getCupSizeId(size)
 
     let alcoholTypeIds: number[] = []
@@ -62,8 +71,8 @@ export async function POST(request: NextRequest) {
     }
 
     const { rows } = await pool.query(
-      `INSERT INTO coffee_preparations (bag_id, cup_size_id, cups_prepared, with_milk, cold_coffee, alcohol_type_ids, other_alcohol, flavor_ids, other_flavor)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO coffee_preparations (bag_id, cup_size_id, cups_prepared, with_milk, cold_coffee, alcohol_type_ids, other_alcohol, flavor_ids, other_flavor, prepared_timestamp)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE($10::timestamptz, now()))
        RETURNING *`,
       [
         resolvedBagId,
@@ -75,6 +84,7 @@ export async function POST(request: NextRequest) {
         otherAlcohol,
         flavorIds.length ? flavorIds : null,
         otherFlavor,
+        preparedTs,
       ]
     )
 

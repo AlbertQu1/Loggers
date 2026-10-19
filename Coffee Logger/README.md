@@ -124,6 +124,8 @@ When the API is unreachable, failed requests are stored in IndexedDB:
 
 The sync queue is an **emergency failsafe only**—PostgreSQL is the single source of truth.
 
+**Timestamps survive retries:** the New Cup form captures `prepared_timestamp` at tap time and sends it in both the direct request and the queued one. `POST /api/cups` stores that value (falling back to `now()` only if it's missing, unparseable or in the future), so a cup that syncs hours later keeps its real preparation time instead of the retry time.
+
 ### Implementation
 
 ```typescript

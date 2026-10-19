@@ -78,6 +78,10 @@ export function CupForm() {
 
     setIsLoading(true)
 
+    // Captured once, at tap time, so a cup that falls back to the offline
+    // queue keeps its real time instead of the time the retry lands.
+    const preparedTimestamp = new Date().toISOString()
+
     try {
       const alcoholTypes = Array.from(selectedAlcohols)
       if (selectedAlcohols.has('Other') && customAlcoholName) {
@@ -110,6 +114,7 @@ export function CupForm() {
       const payload = {
         size,
         cups_prepared: multipleCups ? cupsPrepared : 1,
+        prepared_timestamp: preparedTimestamp,
         cold,
         withMilk,
         useGroundCoffee: isUsingGroundCoffee,
@@ -168,6 +173,7 @@ export function CupForm() {
         await enqueueSyncItem('POST', '/cups', {
           size,
           cups_prepared: multipleCups ? cupsPrepared : 1,
+          prepared_timestamp: preparedTimestamp,
           cold,
           withMilk,
           useGroundCoffee: isUsingGroundCoffee,
