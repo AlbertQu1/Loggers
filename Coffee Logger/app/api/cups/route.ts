@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { spawn } from 'child_process'
 import pool from '@/lib/db'
 import {
   getCupSizeId,
@@ -7,6 +8,23 @@ import {
   promoteFrequentOtherFlavors,
   getOrCreateAnnualGroundCoffeeBagId,
 } from '@/lib/coffee-mappings'
+
+// Refreshes the active bag's cups/duration prediction right after a real cup
+// gets logged, instead of on a timer -- coffee doesn't get made every day, so
+// a fixed schedule would either lag behind or refresh for nothing. Fire-and-
+// forget: never blocks or fails the cup registration itself.
+function triggerBagPrediction() {
+  try {
+    const child = spawn(
+      '/home/albertqu/miniconda3/envs/cafe/bin/python3',
+      ['/home/albertqu/Loggers/Coffee Logger/scripts/predict_active_bag.py'],
+      { detached: true, stdio: 'ignore' }
+    )
+    child.unref()
+  } catch (error) {
+    console.error('[cups:POST] failed to trigger bag prediction', error)
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -90,6 +108,10 @@ export async function POST(request: NextRequest) {
 
     if (otherFlavor) {
       await promoteFrequentOtherFlavors()
+    }
+
+    if (resolvedBagId) {
+      triggerBagPrediction()
     }
 
     const row = rows[0]
