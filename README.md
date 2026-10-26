@@ -30,6 +30,12 @@ Mobile-first PWA for a personal "second brain" — a chat client for the persona
 
 **Stack:** Next.js (App Router) · React · TypeScript · Tailwind CSS · Python/FastAPI backend
 
+### 👔 [Stylo](./Guardarropa)
+
+Mobile-first PWA for a personal stylist inspired by the digital closet in *Clueless* — a client for the [Guardaropa](https://github.com/AlbertQu1/Guardaropa) backend. Photograph your clothes and AI cuts them out and tags them (category, colors, formality, weather, occasions); then build outfits from what you already own, rotate pieces you haven't worn in a while, and check whether a store find goes with your wardrobe. Follows the phone's light/dark mode.
+
+**Stack:** Next.js (App Router) · React · TypeScript · Tailwind CSS · Python/FastAPI backend
+
 ## Why this exists
 
 These apps replace ad-hoc spreadsheet tracking with purpose-built tools: fast mobile data entry, offline-first sync, and a real relational schema underneath — so the data is actually usable for analysis later, not just logged and forgotten.
