@@ -48,7 +48,8 @@ export async function GET(request: NextRequest) {
 
       const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
       const { rows } = await pool.query(
-        `SELECT cp.*, cs.name as size_name, cb.coffee_name as bag_name, pl.name as location_name
+        `SELECT cp.*, cs.name as size_name, cb.coffee_name as bag_name, pl.name as location_name,
+                ARRAY(SELECT name FROM flavors WHERE id = ANY(cp.flavor_ids)) as flavor_names
          FROM coffee_preparations cp
          JOIN cup_sizes cs ON cs.id = cp.cup_size_id
          LEFT JOIN coffee_bags cb ON cb.id = cp.bag_id
@@ -68,8 +69,11 @@ export async function GET(request: NextRequest) {
             cups_prepared: row.cups_prepared,
             cold: row.cold_coffee,
             withMilk: row.with_milk,
+            noCoffee: row.bag_id === null,
             contains_alcohol: !!(row.alcohol_type_ids?.length || row.other_alcohol),
             contains_flavor: !!(row.flavor_ids?.length || row.other_flavor),
+            flavorNames: row.flavor_names || [],
+            otherFlavor: row.other_flavor || undefined,
             bagName: row.bag_name,
           },
         })

@@ -37,6 +37,33 @@ export function HistoryList() {
     })
   }
 
+  const getEntryIcon = (entry: HistoryEntry) => {
+    // Layered, additive icon: base drink + modifiers (cold/milk) + alcohol +
+    // one icon per flavor -- lets you read what kind of cup it was at a
+    // glance in the feed, instead of every entry showing the same cup icon.
+    const data = entry.data
+    const layers: string[] = []
+
+    layers.push(data.noCoffee ? '🥛' : '☕')
+    if (data.cold) layers.push('🧊')
+    if (data.withMilk && !data.noCoffee) layers.push('🥛')
+    if (data.contains_alcohol) layers.push('🍸')
+
+    const flavorIcons: Record<string, string> = {
+      Chocolate: '🍫',
+      Matcha: '🍵',
+      Mazapan: '🥜',
+      Lavender: '🪻',
+      Chai: '🫖',
+    }
+    for (const flavor of data.flavorNames || []) {
+      layers.push(flavorIcons[flavor] || '⭐')
+    }
+    if (data.otherFlavor) layers.push('⭐')
+
+    return layers.join('')
+  }
+
   const getEntryDisplay = (entry: HistoryEntry) => {
     switch (entry.type) {
       case 'cup': {
@@ -53,7 +80,7 @@ export function HistoryList() {
           .join(', ')
         return {
           title: cupLabel,
-          icon: '☕',
+          icon: getEntryIcon(entry),
           description: details,
         }
       }

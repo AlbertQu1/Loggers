@@ -108,6 +108,7 @@ export async function registerCup(payload: CreateCupPayload): Promise<Cup> {
 - `POST /waste` - Record waste event
 - `GET /history` - Fetch activity timeline
 - `GET /cafeteria-benchmarks` / `POST /cafeteria-benchmarks` - Price benchmark entries (`cafeteriaName`, `city`, `price`, optional `latitude`/`longitude` captured via the browser's Geolocation API on the Benchmark tab — requires a secure context, see Access below)
+- `GET /bag-predictions/latest` - Most recent ML prediction (total cups / cycle days) for the active bag, shown by the Bags page's prediction banner
 
 ## Offline Support
 
@@ -123,6 +124,8 @@ When the API is unreachable, failed requests are stored in IndexedDB:
 6. User can also trigger manual "Sync Now"
 
 The sync queue is an **emergency failsafe only**—PostgreSQL is the single source of truth.
+
+**Manual retry:** the "N pending" badge in the health indicator is itself a button — tapping it calls `syncPendingItems()` on demand, instead of waiting for the browser's `online` event (which never fires if the failure was server-side, not a real network drop).
 
 **Timestamps survive retries:** the New Cup form captures `prepared_timestamp` at tap time and sends it in both the direct request and the queued one. `POST /api/cups` stores that value (falling back to `now()` only if it's missing, unparseable or in the future), so a cup that syncs hours later keeps its real preparation time instead of the retry time.
 
@@ -179,11 +182,30 @@ Always visible in the header:
    - Optional filters (ground coffee, cold, with milk)
    - Icons for different event types
    - Timestamps
+   - **Layered cup icons**: each cup's icon is built additively from its attributes instead of a single fixed ☕, so the type is readable at a glance: base (☕ coffee / 🥛 no-coffee milk-only), + 🧊 if cold, + 🥛 if hot with milk, + 🍸 if it has alcohol, + one icon per flavor (🍫 Chocolate, 🍵 Matcha, 🥜 Mazapan, 🪻 Lavender, 🫖 Chai, ⭐ for anything else incl. custom `other_flavor`). Logic in `history-list.tsx`'s `getEntryIcon()`; flavor names come from `GET /history`'s `flavorNames` array (added alongside the existing `contains_flavor` boolean).
 
 5. **Machine Care → Benchmark** (tab inside the Care/Maintenance screen, `components/screens/waste/waste-form.tsx`)
    - Log a cafeteria's double espresso price (name, city, price)
    - "📍 Use my location" captures lat/lng via the browser Geolocation API and stores it with the entry — only works over HTTPS/localhost (see Access below)
    - Shows the running average price for the current year
+
+## Bag Yield Prediction (ML)
+
+The Bags page shows a banner (`components/layout/prediction-banner.tsx`) with an estimate of the active bag's total cups and remaining days, e.g. "🤖 De la casa: el modelo predice ~48 tazas en ~34 días."
+
+- **Model**: reuses the existing Lasso/Ridge/ElasticNet/KNN pipeline from the separate `coffee-consumption-analytics` repo (picks the best model per leave-one-out MAE), trained on all closed bags. Features: bag weight, opening month, average temperature/precipitation during the cycle (Open-Meteo), vacation days overlapping the cycle, recent/cycle average cup size, and — if a coffee name repeats ≥3 times in the history — a dummy variable for that specific coffee (otherwise bucketed as "OTROS").
+- **Trigger**: `scripts/predict_active_bag.py` (not committed to git, same convention as `scripts/sync_from_sheets_landing.py`) runs after every real cup registration (`POST /cups`, fire-and-forget via `triggerBagPrediction()` in `app/api/cups/route.ts`) — not on a fixed schedule, since coffee isn't made every day and a timer would either lag or refresh for nothing. It writes a new row to `bag_predictions` each time.
+- **Data note**: `bag_predictions.prediction_date`/`created_at` lost their DB defaults during the `test` → `casa.coffee_analytics` schema cutover (same incident class as the `prepared_timestamp` bug below) — restored in migration `0011`.
+
+## Known Gaps / Roadmap
+
+Recurring incident (fixed twice now, migrations `0010`/`0011`): columns that depend on a DB-level `DEFAULT` (`prepared_timestamp`, `bag_predictions.prediction_date`/`created_at`) silently lost that default during the schema cutover, causing inserts to fail into the offline sync queue instead of erroring loudly. If a future insert fails mysteriously, check for a missing column default first.
+
+Reconciling failed/missing entries by hand (via `psql`) is not sustainable long-term. Next build priorities, in order:
+
+1. **Editable timestamp on the New Cup form** — today `cup-form.tsx` always sends `new Date().toISOString()` (tap time); there's no way to log something that already happened without either backdating via `psql` or waiting for the next cup to nudge the clock. Add a date/time field defaulting to "now".
+2. **Surface pending/failed sync-queue items with detail in History** — `history-list.tsx` only reads confirmed DB rows via `GET /history`; IndexedDB's `pending`/`failed` items are invisible there, only a count.
+3. **Edit/delete on History entries** — currently fully read-only.
 
 ## Access
 
