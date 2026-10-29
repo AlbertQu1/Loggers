@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { AlertTriangle, BookOpen, Check, Loader2, Plus, ScanLine, Shirt, X } from 'lucide-react'
 import { showToast } from '@/components/common/toast-notifications'
 import { SimboloCuidado } from '@/components/common/simbolo-cuidado'
-import { analizarEtiqueta, estimarCuidado, guardarCuidado, listarSimbolos, obtenerGuia, urlMedia } from '@/services/api/prendas'
+import { analizarEtiqueta, descartarTemporal, estimarCuidado, guardarCuidado, listarSimbolos, obtenerGuia, urlMedia } from '@/services/api/prendas'
 import type { Fibra, GuiaCuidado, OrigenCuidado, Prenda, Simbolo } from '@/types'
 
 const GRUPOS: Record<Simbolo['grupo'], string> = {
@@ -74,6 +74,7 @@ export function CuidadoSection({ prenda, onGuardado }: { prenda: Prenda; onGuard
     setEligiendoTela(false)
     try {
       const r = await analizarEtiqueta(prenda.id, archivo)
+      descartarTemporal([borrador?.foto_etiqueta]) // si era otra foto sin guardar, ya no sirve
       const c = r.cuidado
       setBorrador({
         ...vacio,
@@ -410,7 +411,12 @@ export function CuidadoSection({ prenda, onGuardado }: { prenda: Prenda; onGuard
           </label>
 
           <div className="flex gap-2">
-            <button onClick={() => { setBorrador(null); setVerSimbolos(false) }} className="flex-1 rounded-full border py-3 text-sm">Cancelar</button>
+            <button
+              onClick={() => { descartarTemporal([borrador.foto_etiqueta]); setBorrador(null); setVerSimbolos(false) }}
+              className="flex-1 rounded-full border py-3 text-sm"
+            >
+              Cancelar
+            </button>
             <button
               onClick={guardar} disabled={guardando}
               className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"

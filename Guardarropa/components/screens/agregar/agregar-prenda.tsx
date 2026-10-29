@@ -6,7 +6,7 @@ import { Camera, ImageUp, Loader2, Sparkles } from 'lucide-react'
 import { showToast } from '@/components/common/toast-notifications'
 import { PageHeader } from '@/components/common/page-header'
 import { EtiquetasForm } from './etiquetas-form'
-import { analizarFoto, crearPrenda, urlMedia, type Analisis, type EtiquetasPrenda } from '@/services/api/prendas'
+import { analizarFoto, crearPrenda, descartarTemporal, urlMedia, type Analisis, type EtiquetasPrenda } from '@/services/api/prendas'
 
 const VACIAS: EtiquetasPrenda = {
   categoria: 'top', subcategoria: '', colores: [], estampado: '', material: '',
@@ -116,7 +116,13 @@ export function AgregarPrenda() {
               <button className={btnSecundario} disabled={guardando} onClick={() => guardar(true)}>
                 Guardar y agregar otra
               </button>
-              <button className="w-full py-3 text-sm text-muted-foreground" onClick={() => setAnalisis(null)}>
+              <button
+                className="w-full py-3 text-sm text-muted-foreground"
+                onClick={() => {
+                  descartarTemporal([analisis.foto_original, analisis.foto_recortada])
+                  setAnalisis(null)
+                }}
+              >
                 Descartar
               </button>
             </div>

@@ -182,3 +182,16 @@ export async function armarCargas(prendas: number[]): Promise<{ cargas: Carga[] 
     }),
   )
 }
+
+/** Fotos analizadas que el usuario descartó: se borran del servidor en ese momento.
+ *  Si falla no pasa nada: el servidor borra solo las temporales viejas. */
+export function descartarTemporal(rutas: (string | null | undefined)[]): void {
+  const temporales = rutas.filter((r): r is string => !!r && r.startsWith('temporal/'))
+  if (!temporales.length) return
+  fetch(`${API_BASE_URL}/temporal/descartar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rutas: temporales }),
+    keepalive: true,
+  }).catch(() => {})
+}
