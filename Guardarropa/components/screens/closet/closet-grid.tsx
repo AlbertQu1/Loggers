@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Archive, Camera, Loader2, Sparkles, Trash2, WashingMachine, X } from 'lucide-react'
 import { showToast } from '@/components/common/toast-notifications'
@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/common/page-header'
 import { ColorDots } from '@/components/common/color-dots'
 import { EtiquetasForm } from '@/components/screens/agregar/etiquetas-form'
 import { CuidadoSection } from '@/components/screens/closet/cuidado-section'
+import { formatoTalla } from '@/components/common/talla-input'
 import { CATEGORIAS, MOTIVOS_BAJA } from '@/lib/categorias'
 import { bajaPrenda, editarPrenda, listarPrendas, urlMedia, type EtiquetasPrenda } from '@/services/api/prendas'
 import type { MotivoBaja, Prenda } from '@/types'
@@ -21,6 +22,8 @@ export function ClosetGrid() {
   const [categoria, setCategoria] = useState<string>('')
   const [prendas, setPrendas] = useState<Prenda[] | null>(null)
   const [abierta, setAbierta] = useState<Prenda | null>(null)
+  const abiertaRef = useRef<Prenda | null>(null)
+  abiertaRef.current = abierta
   const [edicion, setEdicion] = useState<EtiquetasPrenda | null>(null)
   // Sacar del clóset: null = cerrado
   const [baja, setBaja] = useState<{ motivo: MotivoBaja | null; nota: string; enviando: boolean } | null>(null)
@@ -31,6 +34,11 @@ export function ClosetGrid() {
       setPrendas(lista)
       // refresca la prenda abierta (ej. después de guardar su cuidado)
       setAbierta((a) => (a ? lista.find((p) => p.id === a.id) ?? null : a))
+      // la etiqueta pudo llenar marca/talla: que "Guardar cambios" no las borre
+      setEdicion((e) => {
+        const p = e && abiertaRef.current ? lista.find((x) => x.id === abiertaRef.current!.id) : null
+        return e && p ? { ...e, marca: e.marca || p.marca, talla: e.talla || p.talla } : e
+      })
     } catch (err) {
       showToast(`No se pudo cargar el clóset: ${(err as Error).message}`, 'error')
       setPrendas([])
@@ -48,7 +56,7 @@ export function ClosetGrid() {
     setEdicion({
       categoria: p.categoria, subcategoria: p.subcategoria, colores: p.colores, estampado: p.estampado,
       material: p.material, formalidad: p.formalidad, temporada: p.temporada, ocasiones: p.ocasiones,
-      descripcion: p.descripcion ?? '',
+      descripcion: p.descripcion ?? '', talla: p.talla, marca: p.marca, ajuste: p.ajuste,
     })
   }
 
@@ -183,6 +191,17 @@ export function ClosetGrid() {
                 <p className="text-xs text-muted-foreground">días desde la última</p>
               </div>
             </div>
+            {(abierta.talla || abierta.marca || abierta.ajuste) && (
+              <div className="flex flex-wrap justify-center gap-2">
+                {abierta.marca && <span className="rounded-full bg-secondary px-3 py-1 text-sm">{abierta.marca}</span>}
+                {abierta.talla && (
+                  <span className="rounded-full bg-secondary px-3 py-1 text-sm">
+                    {abierta.talla.includes('/') ? formatoTalla(abierta.categoria, abierta.talla) : `Talla ${abierta.talla}`}
+                  </span>
+                )}
+                {abierta.ajuste && <span className="rounded-full bg-secondary px-3 py-1 text-sm first-letter:uppercase">{abierta.ajuste}</span>}
+              </div>
+            )}
             <Link
               href={`/outfit?base=${abierta.id}`}
               className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-[15px] font-medium text-primary-foreground active:scale-[0.98]"

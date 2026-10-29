@@ -21,6 +21,9 @@ export interface Prenda {
   foto_etiqueta: string | null
   composicion: Fibra[] | null
   cuidado: Cuidado | null
+  talla: string | null
+  marca: string | null
+  ajuste: Ajuste | null
   ultimo_uso: string | null
   veces_usada: number
 }
@@ -116,4 +119,16 @@ export interface Baja {
   created_at: string
   veces_usada: number
   ultimo_uso: string | null
+}
+
+export type Ajuste = 'ajustado' | 'regular' | 'holgado' | 'oversize'
+
+interface Conteo { valor: string; prendas: number }
+
+export interface ResumenTallas {
+  total: number
+  con_talla: number
+  categorias: { categoria: Categoria; prendas: number; sin_talla: number; tallas: Conteo[]; marcas: Conteo[]; ajustes: Conteo[] }[]
+  marcas: { marca: string; prendas: number; categorias: Categoria[] }[]
+  ajustes: Ajuste[]
 }

@@ -10,7 +10,7 @@ import { analizarFoto, crearPrenda, descartarTemporal, urlMedia, type Analisis, 
 
 const VACIAS: EtiquetasPrenda = {
   categoria: 'top', subcategoria: '', colores: [], estampado: '', material: '',
-  formalidad: 3, temporada: [], ocasiones: [], descripcion: '',
+  formalidad: 3, temporada: [], ocasiones: [], descripcion: '', talla: null, marca: null, ajuste: null,
 }
 
 const btnPrimario =
@@ -35,7 +35,7 @@ export function AgregarPrenda() {
     try {
       const r = await analizarFoto(archivo)
       setAnalisis(r)
-      setEtiquetas(r.etiquetas ?? VACIAS)
+      setEtiquetas(r.etiquetas ? { ...VACIAS, ...r.etiquetas } : VACIAS)
       if (!r.etiquetas) showToast('La IA no respondió; llena los datos a mano', 'warning')
     } catch (err) {
       showToast(`No se pudo analizar: ${(err as Error).message}`, 'error')

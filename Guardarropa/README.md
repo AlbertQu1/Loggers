@@ -12,7 +12,7 @@ Client for the [Guardaropa](https://github.com/AlbertQu1/Guardaropa) FastAPI bac
 - **Lavandería** (from Clóset) — select what you're about to wash and get it split into compatible loads (whites/lights, darks, colors, delicates, hand wash, dry clean) with max temperature and per-piece warnings. Includes a **care guide**: what each laundry symbol means, how to wash each fabric, and household items like sheets, towels and curtains.
 - **Salidas** (from Clóset) — when a piece leaves your closet you say why (gifted, donated, sold, worn out, doesn't fit…). Its history is kept here, with how much you wore it, and you can bring it back.
 - **Olvidadas** — pieces you haven't worn in 60+ days and pieces you've never worn; tap one to build an outfit around it.
-- **Tienda** — *coming soon:* photograph something in a store and see what it goes with and whether you already own something similar.
+- **Tienda** — your sizes and brands per category (shirts by neck and sleeve, pants by waist and length), to have at hand while shopping. Each piece stores size, brand and fit; scanning the inside label fills brand and size. *Coming soon:* photograph something in a store and see what it goes with and whether you already own something similar.
 
 Follows the phone's light/dark mode automatically.
 

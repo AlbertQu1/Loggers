@@ -1,4 +1,4 @@
-import type { Categoria, MotivoBaja } from '@/types'
+import type { Ajuste, Categoria, MotivoBaja } from '@/types'
 
 export const CATEGORIAS: { valor: Categoria; label: string }[] = [
   { valor: 'top', label: 'Tops' },
@@ -23,4 +23,11 @@ export const MOTIVOS_BAJA: { valor: MotivoBaja; label: string }[] = [
   { valor: 'no_gusta', label: 'Ya no me gusta' },
   { valor: 'perdida', label: 'Se perdió' },
   { valor: 'otro', label: 'Otro' },
+]
+
+export const AJUSTES: { valor: Ajuste; label: string }[] = [
+  { valor: 'ajustado', label: 'Ajustado' },
+  { valor: 'regular', label: 'Regular' },
+  { valor: 'holgado', label: 'Holgado' },
+  { valor: 'oversize', label: 'Oversize' },
 ]

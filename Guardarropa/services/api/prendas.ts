@@ -1,4 +1,4 @@
-import type { ArmadoOutfit, Baja, Carga, Cuidado, EstimacionCuidado, Fibra, GuiaCuidado, MotivoBaja, OrigenCuidado, Outfit, Prenda, Simbolo } from '@/types'
+import type { Ajuste, ArmadoOutfit, Baja, Carga, Cuidado, EstimacionCuidado, Fibra, GuiaCuidado, MotivoBaja, OrigenCuidado, Outfit, Prenda, ResumenTallas, Simbolo } from '@/types'
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8003'
 
@@ -14,6 +14,9 @@ export interface EtiquetasPrenda {
   temporada: string[]
   ocasiones: string[]
   descripcion: string
+  talla: string | null
+  marca: string | null
+  ajuste: Ajuste | null
 }
 
 export interface Analisis {
@@ -86,6 +89,8 @@ export async function restaurarPrenda(id: number): Promise<void> {
 
 export interface PropuestaCuidado extends Cuidado {
   composicion: Fibra[]
+  marca: string | null
+  talla: string | null
 }
 
 export async function analizarEtiqueta(prendaId: number, foto: File): Promise<{ foto_etiqueta: string; cuidado: PropuestaCuidado | null }> {
@@ -96,7 +101,10 @@ export async function analizarEtiqueta(prendaId: number, foto: File): Promise<{ 
 
 export async function guardarCuidado(
   prendaId: number,
-  c: { foto_etiqueta?: string | null; simbolos: string[]; composicion: Fibra[]; notas: string; origen?: OrigenCuidado | null },
+  c: {
+    foto_etiqueta?: string | null; simbolos: string[]; composicion: Fibra[]; notas: string
+    origen?: OrigenCuidado | null; marca?: string | null; talla?: string | null
+  },
 ): Promise<void> {
   await json(
     await fetch(`${API_BASE_URL}/prendas/${prendaId}/cuidado`, {
@@ -194,4 +202,8 @@ export function descartarTemporal(rutas: (string | null | undefined)[]): void {
     body: JSON.stringify({ rutas: temporales }),
     keepalive: true,
   }).catch(() => {})
+}
+
+export async function obtenerTallas(): Promise<ResumenTallas> {
+  return json(await fetch(`${API_BASE_URL}/tallas`, { cache: 'no-store' }))
 }

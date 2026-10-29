@@ -28,6 +28,8 @@ interface Borrador {
   /** La IA no pudo leer la foto, o leyó la tela pero no los símbolos */
   aviso: 'sin_lectura' | 'sin_simbolos' | null
   telasEstimadas: string[]
+  marca: string
+  talla: string
 }
 
 export function CuidadoSection({ prenda, onGuardado }: { prenda: Prenda; onGuardado: () => void }) {
@@ -54,6 +56,7 @@ export function CuidadoSection({ prenda, onGuardado }: { prenda: Prenda; onGuard
   const vacio: Borrador = {
     foto_etiqueta: prenda.foto_etiqueta, simbolos: [], composicion: [{ fibra: '', porcentaje: null }],
     notas: '', origen: null, aviso: null, telasEstimadas: [],
+    marca: prenda.marca ?? '', talla: prenda.talla ?? '',
   }
 
   function editar() {
@@ -83,6 +86,9 @@ export function CuidadoSection({ prenda, onGuardado }: { prenda: Prenda; onGuard
         composicion: c?.composicion?.length ? c.composicion : vacio.composicion,
         notas: c?.notas ?? '',
         origen: 'etiqueta',
+        // lo que diga la etiqueta gana; si no lo trae, se queda lo que ya tenía la prenda
+        marca: c?.marca || vacio.marca,
+        talla: c?.talla || vacio.talla,
         aviso: c?.simbolos?.length ? null : c?.composicion?.some((f) => f.fibra.trim()) ? 'sin_simbolos' : 'sin_lectura',
       })
     } catch (err) {
@@ -155,6 +161,8 @@ export function CuidadoSection({ prenda, onGuardado }: { prenda: Prenda; onGuard
         composicion: borrador.composicion.filter((f) => f.fibra.trim()),
         notas: borrador.notas,
         origen: borrador.simbolos.length ? borrador.origen ?? 'manual' : null,
+        marca: borrador.marca,
+        talla: borrador.talla,
       })
       showToast('Cuidado guardado', 'success')
       setBorrador(null)
@@ -315,6 +323,17 @@ export function CuidadoSection({ prenda, onGuardado }: { prenda: Prenda; onGuard
               Cuidado típico de {borrador.telasEstimadas.join(' + ')}. Ajústalo si sabes algo más.
             </p>
           )}
+
+          <div className="grid grid-cols-2 gap-2">
+            <label className="space-y-1.5">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Marca</span>
+              <input className={input} value={borrador.marca} placeholder="—" onChange={(e) => setBorrador({ ...borrador, marca: e.target.value })} />
+            </label>
+            <label className="space-y-1.5">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Talla</span>
+              <input className={input} value={borrador.talla} placeholder="—" onChange={(e) => setBorrador({ ...borrador, talla: e.target.value })} />
+            </label>
+          </div>
 
           <div className="space-y-2">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Tela</span>

@@ -1,7 +1,10 @@
 'use client'
 
-import { CATEGORIAS, OCASIONES, TEMPORADAS } from '@/lib/categorias'
-import type { EtiquetasPrenda } from '@/services/api/prendas'
+import { useEffect, useState } from 'react'
+import { AJUSTES, CATEGORIAS, OCASIONES, TEMPORADAS } from '@/lib/categorias'
+import { obtenerTallas, type EtiquetasPrenda } from '@/services/api/prendas'
+import { TallaInput } from '@/components/common/talla-input'
+import type { Categoria, ResumenTallas } from '@/types'
 
 const input =
   'w-full rounded-xl border bg-card px-4 py-3 text-[15px] outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/25'
@@ -42,6 +45,12 @@ const NIVELES = ['Muy casual', 'Casual', 'Smart casual', 'Formal', 'Muy formal']
 export function EtiquetasForm({ valor, onChange }: { valor: EtiquetasPrenda; onChange: (v: EtiquetasPrenda) => void }) {
   const set = <K extends keyof EtiquetasPrenda>(k: K, v: EtiquetasPrenda[K]) => onChange({ ...valor, [k]: v })
   const formalidad = valor.formalidad ?? 3
+  // Para autocompletar con lo que ya usas (así "Zara" no queda como "zara" y "ZARA")
+  const [resumen, setResumen] = useState<ResumenTallas | null>(null)
+  useEffect(() => {
+    obtenerTallas().then(setResumen).catch(() => {})
+  }, [])
+  const tallasCategoria = resumen?.categorias.find((c) => c.categoria === valor.categoria)?.tallas.map((t) => t.valor) ?? []
 
   return (
     <div className="space-y-5">
@@ -80,6 +89,37 @@ export function EtiquetasForm({ valor, onChange }: { valor: EtiquetasPrenda; onC
         <Campo label="Material">
           <input className={input} value={valor.material ?? ''} onChange={(e) => set('material', e.target.value)} />
         </Campo>
+      </div>
+      <Campo label="Marca">
+        <input
+          className={input} list="marcas-conocidas" placeholder="ej. Zara" autoCapitalize="words"
+          value={valor.marca ?? ''} onChange={(e) => set('marca', e.target.value)}
+        />
+        <datalist id="marcas-conocidas">
+          {resumen?.marcas.map((m) => <option key={m.marca} value={m.marca} />)}
+        </datalist>
+      </Campo>
+      <TallaInput
+        key={valor.categoria}
+        categoria={valor.categoria as Categoria} valor={valor.talla}
+        onChange={(v) => set('talla', v)} sugerencias={tallasCategoria}
+      />
+      <div className="space-y-1.5">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Cómo te queda</span>
+        <div className="grid grid-cols-4 gap-2">
+          {AJUSTES.map((a) => (
+            <button
+              key={a.valor}
+              type="button"
+              onClick={() => set('ajuste', valor.ajuste === a.valor ? null : a.valor)}
+              className={`rounded-xl border px-1 py-2.5 text-sm transition ${
+                valor.ajuste === a.valor ? 'border-primary bg-primary text-primary-foreground' : 'bg-card'
+              }`}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs font-medium uppercase tracking-wider text-muted-foreground">
