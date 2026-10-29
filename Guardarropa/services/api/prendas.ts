@@ -1,4 +1,4 @@
-import type { ArmadoOutfit, Carga, Cuidado, Fibra, Outfit, Prenda, Simbolo } from '@/types'
+import type { ArmadoOutfit, Carga, Cuidado, EstimacionCuidado, Fibra, GuiaCuidado, OrigenCuidado, Outfit, Prenda, Simbolo } from '@/types'
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8003'
 
@@ -81,7 +81,7 @@ export async function analizarEtiqueta(prendaId: number, foto: File): Promise<{ 
 
 export async function guardarCuidado(
   prendaId: number,
-  c: { foto_etiqueta?: string | null; simbolos: string[]; composicion: Fibra[]; notas: string },
+  c: { foto_etiqueta?: string | null; simbolos: string[]; composicion: Fibra[]; notas: string; origen?: OrigenCuidado | null },
 ): Promise<void> {
   await json(
     await fetch(`${API_BASE_URL}/prendas/${prendaId}/cuidado`, {
@@ -96,6 +96,23 @@ let cacheSimbolos: Simbolo[] | null = null
 export async function listarSimbolos(): Promise<Simbolo[]> {
   if (!cacheSimbolos) cacheSimbolos = await json<Simbolo[]>(await fetch(`${API_BASE_URL}/cuidado/simbolos`))
   return cacheSimbolos
+}
+
+let cacheGuia: GuiaCuidado | null = null
+export async function obtenerGuia(): Promise<GuiaCuidado> {
+  if (!cacheGuia) cacheGuia = await json<GuiaCuidado>(await fetch(`${API_BASE_URL}/cuidado/guia`))
+  return cacheGuia
+}
+
+/** Símbolos sugeridos para una prenda sin etiqueta (o ilegible), según su tela. */
+export async function estimarCuidado(fibras: string[]): Promise<EstimacionCuidado> {
+  return json(
+    await fetch(`${API_BASE_URL}/cuidado/estimar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fibras }),
+    }),
+  )
 }
 
 // ---------- Outfits ----------

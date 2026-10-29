@@ -40,6 +40,22 @@ export interface Cuidado {
   planchado?: string | null
   tintoreria?: string | null
   notas?: string
+  origen?: OrigenCuidado | null
+}
+
+/** De dónde salieron los símbolos: la foto de la etiqueta, la tela elegida (estimado) o a mano. */
+export type OrigenCuidado = 'etiqueta' | 'tela' | 'manual'
+
+export interface GuiaCuidado {
+  grupos: { grupo: Simbolo['grupo']; nombre: string; como_leer: string }[]
+  telas: { id: string; nombre: string; descripcion: string; simbolos: string[]; consejos: string[] }[]
+  hogar: { id: string; nombre: string; frecuencia: string; simbolos: string[]; consejos: string[] }[]
+}
+
+export interface EstimacionCuidado {
+  simbolos: string[]
+  telas: string[]
+  no_reconocidas: string[]
 }
 
 export interface Simbolo {

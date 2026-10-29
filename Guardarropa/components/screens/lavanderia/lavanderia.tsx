@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertTriangle, ArrowLeft, Hand, Loader2, Shirt, Thermometer, WashingMachine } from 'lucide-react'
+import Link from 'next/link'
+import { AlertTriangle, ArrowLeft, BookOpen, Hand, Loader2, Shirt, Thermometer, WashingMachine } from 'lucide-react'
 import { showToast } from '@/components/common/toast-notifications'
 import { PageHeader } from '@/components/common/page-header'
 import { PrendaPicker } from '@/components/common/prenda-picker'
@@ -52,6 +53,11 @@ export function Lavanderia() {
                       {c.ciclo && <span>ciclo {c.ciclo}</span>}
                     </div>
                     {c.consejo && <p className="mt-1 text-sm text-muted-foreground">{c.consejo}</p>}
+                    {c.tipo === 'sin_info' && (
+                      <Link href="/lavanderia/guia?tab=telas" className="mt-1 inline-block text-sm text-accent underline-offset-4 hover:underline">
+                        Ver cómo se lava cada tela
+                      </Link>
+                    )}
                   </div>
                 </div>
                 <ul className="space-y-2">
@@ -78,7 +84,11 @@ export function Lavanderia() {
 
   return (
     <>
-      <PageHeader titulo="Lavandería" subtitulo="Elige lo que vas a lavar y Stylo lo separa en cargas" />
+      <PageHeader titulo="Lavandería" subtitulo="Elige lo que vas a lavar y Stylo lo separa en cargas">
+        <Link href="/lavanderia/guia" className="flex shrink-0 items-center gap-1.5 rounded-full border bg-card px-3 py-2 text-sm">
+          <BookOpen className="h-4 w-4" /> Guía
+        </Link>
+      </PageHeader>
       <div className="px-5">
         <PrendaPicker
           multiple
