@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Bookmark, CalendarCheck, Loader2, Pin, PinOff, RefreshCw } from 'lucide-react'
+import { Backpack, Bookmark, CalendarCheck, Loader2, Pin, PinOff, RefreshCw, X } from 'lucide-react'
 import { showToast } from '@/components/common/toast-notifications'
 import { PageHeader } from '@/components/common/page-header'
 import { PrendaPicker } from '@/components/common/prenda-picker'
@@ -11,10 +11,10 @@ import { armarOutfit, guardarOutfit, registrarUso, urlMedia } from '@/services/a
 import type { ArmadoOutfit, Categoria, Prenda } from '@/types'
 
 const NOMBRE_SLOT: Record<Categoria, string> = {
-  top: 'Arriba', bottom: 'Abajo', calzado: 'Zapatos', chamarra: 'Encima', accesorio: 'Accesorio', vestido_completo: 'Completo',
+  top: 'Arriba', bottom: 'Abajo', calzado: 'Zapatos', chamarra: 'Encima', accesorio: 'Accesorio', bolsa: 'Bolsa o mochila', vestido_completo: 'Completo',
 }
 // Orden visual del look, de arriba a abajo
-const ORDEN_LOOK: Categoria[] = ['chamarra', 'top', 'vestido_completo', 'bottom', 'calzado', 'accesorio']
+const ORDEN_LOOK: Categoria[] = ['chamarra', 'top', 'vestido_completo', 'bottom', 'calzado', 'accesorio', 'bolsa']
 
 function Foto({ p, className = '' }: { p: Prenda; className?: string }) {
   // eslint-disable-next-line @next/next/no-img-element
@@ -28,6 +28,8 @@ export function Armador() {
 
   const [armado, setArmado] = useState<ArmadoOutfit | null>(null)
   const [fijas, setFijas] = useState<number[]>([])
+  // Espacios que solo salen si los pides (bolsa/mochila)
+  const [extras, setExtras] = useState<Categoria[]>([])
   const [seleccion, setSeleccion] = useState<Partial<Record<Categoria, number | null>>>({})
   const [cargando, setCargando] = useState(false)
   // Todas las prendas vistas: las fijadas ya no vienen en las opciones de la respuesta
@@ -36,10 +38,10 @@ export function Armador() {
   const manuales = useRef(new Set<Categoria>())
   const [guardando, setGuardando] = useState<'' | 'uso' | 'guardar'>('')
 
-  const cargar = useCallback(async (base: number, fijasActuales: number[]) => {
+  const cargar = useCallback(async (base: number, fijasActuales: number[], extrasActuales: Categoria[] = []) => {
     setCargando(true)
     try {
-      const r = await armarOutfit(base, fijasActuales)
+      const r = await armarOutfit(base, fijasActuales, extrasActuales)
       vistas.current.set(r.base.id, r.base)
       r.slots.forEach((s) => s.opciones.forEach((o) => vistas.current.set(o.prenda.id, o.prenda)))
       setArmado(r)
@@ -52,7 +54,8 @@ export function Armador() {
             (prev[s.slot] === null || s.opciones.some((o) => o.prenda.id === prev[s.slot]))
           )
             nueva[s.slot] = prev[s.slot]
-          else nueva[s.slot] = s.opcional ? null : s.opciones[0]?.prenda.id ?? null
+          // si lo pediste (bolsa), arranca con la mejor opción en vez de "Sin"
+          else nueva[s.slot] = s.opcional && !s.a_pedido ? null : s.opciones[0]?.prenda.id ?? null
         }
         return nueva
       })
@@ -65,6 +68,7 @@ export function Armador() {
 
   useEffect(() => {
     setFijas([])
+    setExtras([])
     setSeleccion({})
     manuales.current.clear()
     setArmado(null)
@@ -109,8 +113,25 @@ export function Armador() {
   function toggleFija(id: number) {
     const nuevas = fijas.includes(id) ? fijas.filter((f) => f !== id) : [...fijas, id]
     setFijas(nuevas)
-    cargar(baseId!, nuevas)
+    cargar(baseId!, nuevas, extras)
   }
+
+  function pedirSlot(slot: Categoria) {
+    const nuevos = [...extras, slot]
+    setExtras(nuevos)
+    cargar(baseId!, fijas, nuevos)
+  }
+
+  function quitarSlot(slot: Categoria) {
+    const nuevos = extras.filter((e) => e !== slot)
+    const nuevasFijas = fijas.filter((id) => porId.get(id)?.categoria !== slot)
+    manuales.current.delete(slot)
+    setExtras(nuevos)
+    setFijas(nuevasFijas)
+    cargar(baseId!, nuevasFijas, nuevos)
+  }
+
+  const puedePedirBolsa = armado.base.categoria !== 'bolsa' && !armado.slots.some((s) => s.slot === 'bolsa')
 
   async function meLoPuse() {
     setGuardando('uso')
@@ -178,8 +199,9 @@ export function Armador() {
               <div className="mb-2 flex items-center justify-between px-5">
                 <h3 className="font-serif text-lg">
                   {NOMBRE_SLOT[s.slot]}
-                  {s.opcional && <span className="ml-2 font-sans text-xs text-muted-foreground">opcional</span>}
+                  {s.opcional && !s.a_pedido && <span className="ml-2 font-sans text-xs text-muted-foreground">opcional</span>}
                 </h3>
+                <div className="flex items-center gap-2">
                 {(fija || elegidaId) && (
                   <button
                     onClick={() => toggleFija(fija ? fija.id : elegidaId!)}
@@ -190,6 +212,16 @@ export function Armador() {
                     {fija ? <><PinOff className="h-3.5 w-3.5" /> Fijada</> : <><Pin className="h-3.5 w-3.5" /> Fijar</>}
                   </button>
                 )}
+                {s.a_pedido && (
+                  <button
+                    onClick={() => quitarSlot(s.slot)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border bg-card text-muted-foreground"
+                    aria-label={`Quitar ${NOMBRE_SLOT[s.slot]}`}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                </div>
               </div>
 
               {fija ? (
@@ -237,6 +269,14 @@ export function Armador() {
             </section>
           )
         })}
+        {puedePedirBolsa && (
+          <button
+            onClick={() => pedirSlot('bolsa')}
+            className="mx-5 flex w-[calc(100%-2.5rem)] items-center justify-center gap-2 rounded-2xl border border-dashed py-4 text-sm text-muted-foreground"
+          >
+            <Backpack className="h-4 w-4" /> Agregar bolsa o mochila
+          </button>
+        )}
       </div>
 
       {/* Acciones */}

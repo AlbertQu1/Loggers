@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Camera, Sparkles, Trash2, WashingMachine, X } from 'lucide-react'
+import { Archive, Camera, Loader2, Sparkles, Trash2, WashingMachine, X } from 'lucide-react'
 import { showToast } from '@/components/common/toast-notifications'
 import { PageHeader } from '@/components/common/page-header'
 import { ColorDots } from '@/components/common/color-dots'
 import { EtiquetasForm } from '@/components/screens/agregar/etiquetas-form'
 import { CuidadoSection } from '@/components/screens/closet/cuidado-section'
-import { CATEGORIAS } from '@/lib/categorias'
+import { CATEGORIAS, MOTIVOS_BAJA } from '@/lib/categorias'
 import { bajaPrenda, editarPrenda, listarPrendas, urlMedia, type EtiquetasPrenda } from '@/services/api/prendas'
-import type { Prenda } from '@/types'
+import type { MotivoBaja, Prenda } from '@/types'
 
 function diasDesde(fecha: string | null) {
   if (!fecha) return null
@@ -22,6 +22,8 @@ export function ClosetGrid() {
   const [prendas, setPrendas] = useState<Prenda[] | null>(null)
   const [abierta, setAbierta] = useState<Prenda | null>(null)
   const [edicion, setEdicion] = useState<EtiquetasPrenda | null>(null)
+  // Sacar del clóset: null = cerrado
+  const [baja, setBaja] = useState<{ motivo: MotivoBaja | null; nota: string; enviando: boolean } | null>(null)
 
   async function cargar() {
     try {
@@ -62,14 +64,18 @@ export function ClosetGrid() {
     }
   }
 
-  async function borrar() {
-    if (!abierta || !confirm('¿Quitar esta prenda de tu clóset?')) return
+  async function sacar() {
+    if (!abierta || !baja?.motivo) return
+    setBaja({ ...baja, enviando: true })
     try {
-      await bajaPrenda(abierta.id)
+      await bajaPrenda(abierta.id, baja.motivo, baja.nota)
+      showToast('Salió del clóset. La encuentras en Salidas', 'success')
+      setBaja(null)
       setAbierta(null)
       cargar()
     } catch (err) {
-      showToast(`No se pudo quitar: ${(err as Error).message}`, 'error')
+      showToast(`No se pudo sacar: ${(err as Error).message}`, 'error')
+      setBaja({ ...baja, enviando: false })
     }
   }
 
@@ -78,13 +84,21 @@ export function ClosetGrid() {
   return (
     <>
       <PageHeader titulo="Mi clóset" subtitulo={subtitulo}>
-        <Link
-          href="/lavanderia"
-          className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-2 text-sm"
-          aria-label="Lavandería"
-        >
-          <WashingMachine className="h-4 w-4" /> Lavar
-        </Link>
+        <div className="flex shrink-0 gap-2">
+          <Link
+            href="/lavanderia"
+            className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-2 text-sm"
+            aria-label="Lavandería"
+          >
+            <WashingMachine className="h-4 w-4" /> Lavar
+          </Link>
+          <Link
+            href="/salidas"
+            className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-2 text-sm"
+          >
+            <Archive className="h-4 w-4" /> Salidas
+          </Link>
+        </div>
       </PageHeader>
 
       <div className="scrollbar-none flex gap-2 overflow-x-auto px-5 pb-5">
@@ -150,7 +164,7 @@ export function ClosetGrid() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
           <div className="sticky top-0 z-10 flex items-center justify-between bg-background/90 px-5 py-4 backdrop-blur-md pt-[max(1rem,env(safe-area-inset-top))]">
             <span className="font-serif text-xl first-letter:uppercase">{abierta.subcategoria || 'Prenda'}</span>
-            <button onClick={() => setAbierta(null)} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary" aria-label="Cerrar">
+            <button onClick={() => { setAbierta(null); setBaja(null) }} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary" aria-label="Cerrar">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -181,9 +195,48 @@ export function ClosetGrid() {
             <button onClick={guardar} className="w-full rounded-full border bg-card py-4 text-[15px] font-medium active:scale-[0.98]">
               Guardar cambios
             </button>
-            <button onClick={borrar} className="flex w-full items-center justify-center gap-2 py-3 text-sm text-destructive">
-              <Trash2 className="h-4 w-4" /> Quitar del clóset
-            </button>
+            {!baja ? (
+              <button
+                onClick={() => setBaja({ motivo: null, nota: '', enviando: false })}
+                className="flex w-full items-center justify-center gap-2 py-3 text-sm text-destructive"
+              >
+                <Trash2 className="h-4 w-4" /> Sacar del clóset
+              </button>
+            ) : (
+              <section className="space-y-4 rounded-3xl border bg-card p-5">
+                <div>
+                  <h3 className="font-serif text-xl">¿Por qué sale?</h3>
+                  <p className="text-sm text-muted-foreground">Deja de aparecer en el clóset y en los outfits; su historial se queda en Salidas.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {MOTIVOS_BAJA.map((m) => (
+                    <button
+                      key={m.valor}
+                      onClick={() => setBaja({ ...baja, motivo: m.valor })}
+                      className={`rounded-full border px-3.5 py-2 text-sm transition ${
+                        baja.motivo === m.valor ? 'border-primary bg-primary text-primary-foreground' : 'bg-background'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  value={baja.nota} onChange={(e) => setBaja({ ...baja, nota: e.target.value })}
+                  placeholder={baja.motivo === 'regalada' ? '¿A quién? (opcional)' : 'Nota (opcional)'}
+                  className="w-full rounded-xl border bg-background px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => setBaja(null)} className="flex-1 rounded-full border py-3 text-sm">Cancelar</button>
+                  <button
+                    onClick={sacar} disabled={!baja.motivo || baja.enviando}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-full bg-destructive py-3 text-sm font-medium text-white disabled:opacity-40"
+                  >
+                    {baja.enviando && <Loader2 className="h-4 w-4 animate-spin" />} Sacar
+                  </button>
+                </div>
+              </section>
+            )}
           </div>
         </div>
       )}

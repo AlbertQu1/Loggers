@@ -3,7 +3,7 @@ export interface HealthStatus {
   timestamp: string
 }
 
-export type Categoria = 'top' | 'bottom' | 'calzado' | 'chamarra' | 'accesorio' | 'vestido_completo'
+export type Categoria = 'top' | 'bottom' | 'calzado' | 'chamarra' | 'accesorio' | 'bolsa' | 'vestido_completo'
 
 export interface Prenda {
   id: number
@@ -73,6 +73,8 @@ export interface OpcionSlot {
 export interface Slot {
   slot: Categoria
   opcional: boolean
+  /** Solo aparece si se pide (bolsa/mochila) */
+  a_pedido: boolean
   fija: number | null
   opciones: OpcionSlot[]
 }
@@ -97,4 +99,21 @@ export interface Carga {
   ciclo: 'normal' | 'delicado' | null
   consejo: string
   prendas: { id: number; subcategoria: string | null; categoria: Categoria; foto: string; avisos: string[] }[]
+}
+
+export type MotivoBaja = 'regalada' | 'donada' | 'vendida' | 'rota' | 'no_queda' | 'no_gusta' | 'perdida' | 'otro'
+
+export interface Baja {
+  id: number
+  foto_original: string
+  foto_recortada: string | null
+  categoria: Categoria
+  subcategoria: string | null
+  colores: string[]
+  baja_motivo: MotivoBaja | null
+  baja_nota: string | null
+  baja_fecha: string | null
+  created_at: string
+  veces_usada: number
+  ultimo_uso: string | null
 }

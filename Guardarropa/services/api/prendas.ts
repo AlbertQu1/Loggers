@@ -1,4 +1,4 @@
-import type { ArmadoOutfit, Carga, Cuidado, EstimacionCuidado, Fibra, GuiaCuidado, OrigenCuidado, Outfit, Prenda, Simbolo } from '@/types'
+import type { ArmadoOutfit, Baja, Carga, Cuidado, EstimacionCuidado, Fibra, GuiaCuidado, MotivoBaja, OrigenCuidado, Outfit, Prenda, Simbolo } from '@/types'
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8003'
 
@@ -63,8 +63,23 @@ export async function editarPrenda(id: number, p: PrendaIn): Promise<void> {
   )
 }
 
-export async function bajaPrenda(id: number): Promise<void> {
-  await json(await fetch(`${API_BASE_URL}/prendas/${id}`, { method: 'DELETE' }))
+/** Sacar del clóset con motivo (se conserva el historial de usos). */
+export async function bajaPrenda(id: number, motivo: MotivoBaja, nota = ''): Promise<void> {
+  await json(
+    await fetch(`${API_BASE_URL}/prendas/${id}/baja`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ motivo, nota }),
+    }),
+  )
+}
+
+export async function listarBajas(): Promise<{ resumen: Record<string, number>; bajas: Baja[] }> {
+  return json(await fetch(`${API_BASE_URL}/bajas`, { cache: 'no-store' }))
+}
+
+export async function restaurarPrenda(id: number): Promise<void> {
+  await json(await fetch(`${API_BASE_URL}/prendas/${id}/restaurar`, { method: 'POST' }))
 }
 
 // ---------- Cuidado ----------
@@ -116,9 +131,10 @@ export async function estimarCuidado(fibras: string[]): Promise<EstimacionCuidad
 }
 
 // ---------- Outfits ----------
-export async function armarOutfit(base: number, fijas: number[] = []): Promise<ArmadoOutfit> {
+export async function armarOutfit(base: number, fijas: number[] = [], extras: string[] = []): Promise<ArmadoOutfit> {
   const qs = new URLSearchParams({ base: String(base) })
   fijas.forEach((f) => qs.append('fijas', String(f)))
+  extras.forEach((e) => qs.append('extras', e))
   return json(await fetch(`${API_BASE_URL}/outfit/armar?${qs}`, { cache: 'no-store' }))
 }
 
