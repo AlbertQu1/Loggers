@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Camera, Trash2, X } from 'lucide-react'
+import { Camera, Sparkles, Trash2, WashingMachine, X } from 'lucide-react'
 import { showToast } from '@/components/common/toast-notifications'
 import { PageHeader } from '@/components/common/page-header'
 import { ColorDots } from '@/components/common/color-dots'
 import { EtiquetasForm } from '@/components/screens/agregar/etiquetas-form'
+import { CuidadoSection } from '@/components/screens/closet/cuidado-section'
 import { CATEGORIAS } from '@/lib/categorias'
 import { bajaPrenda, editarPrenda, listarPrendas, urlMedia, type EtiquetasPrenda } from '@/services/api/prendas'
 import type { Prenda } from '@/types'
@@ -24,7 +25,10 @@ export function ClosetGrid() {
 
   async function cargar() {
     try {
-      setPrendas(await listarPrendas(categoria || undefined))
+      const lista = await listarPrendas(categoria || undefined)
+      setPrendas(lista)
+      // refresca la prenda abierta (ej. después de guardar su cuidado)
+      setAbierta((a) => (a ? lista.find((p) => p.id === a.id) ?? null : a))
     } catch (err) {
       showToast(`No se pudo cargar el clóset: ${(err as Error).message}`, 'error')
       setPrendas([])
@@ -73,7 +77,15 @@ export function ClosetGrid() {
 
   return (
     <>
-      <PageHeader titulo="Mi clóset" subtitulo={subtitulo} />
+      <PageHeader titulo="Mi clóset" subtitulo={subtitulo}>
+        <Link
+          href="/lavanderia"
+          className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-2 text-sm"
+          aria-label="Lavandería"
+        >
+          <WashingMachine className="h-4 w-4" /> Lavar
+        </Link>
+      </PageHeader>
 
       <div className="scrollbar-none flex gap-2 overflow-x-auto px-5 pb-5">
         {[{ valor: '', label: 'Todo' }, ...CATEGORIAS].map((c) => (
@@ -125,7 +137,7 @@ export function ClosetGrid() {
                   )}
                 </div>
                 <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-                  <span className="truncate text-sm font-medium capitalize">{p.subcategoria || p.categoria}</span>
+                  <span className="truncate text-sm font-medium first-letter:uppercase">{p.subcategoria || p.categoria}</span>
                   <ColorDots colores={p.colores} />
                 </div>
               </button>
@@ -137,7 +149,7 @@ export function ClosetGrid() {
       {abierta && edicion && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
           <div className="sticky top-0 z-10 flex items-center justify-between bg-background/90 px-5 py-4 backdrop-blur-md pt-[max(1rem,env(safe-area-inset-top))]">
-            <span className="font-serif text-xl capitalize">{abierta.subcategoria || 'Prenda'}</span>
+            <span className="font-serif text-xl first-letter:uppercase">{abierta.subcategoria || 'Prenda'}</span>
             <button onClick={() => setAbierta(null)} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary" aria-label="Cerrar">
               <X className="h-5 w-5" />
             </button>
@@ -157,8 +169,16 @@ export function ClosetGrid() {
                 <p className="text-xs text-muted-foreground">días desde la última</p>
               </div>
             </div>
+            <Link
+              href={`/outfit?base=${abierta.id}`}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-[15px] font-medium text-primary-foreground active:scale-[0.98]"
+            >
+              <Sparkles className="h-4 w-4" /> Armar outfit con esta
+            </Link>
+            <CuidadoSection prenda={abierta} onGuardado={cargar} />
+            <h3 className="pt-2 font-serif text-xl">Detalles</h3>
             <EtiquetasForm valor={edicion} onChange={setEdicion} />
-            <button onClick={guardar} className="w-full rounded-full bg-primary py-4 text-[15px] font-medium text-primary-foreground active:scale-[0.98]">
+            <button onClick={guardar} className="w-full rounded-full border bg-card py-4 text-[15px] font-medium active:scale-[0.98]">
               Guardar cambios
             </button>
             <button onClick={borrar} className="flex w-full items-center justify-center gap-2 py-3 text-sm text-destructive">

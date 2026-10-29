@@ -18,6 +18,67 @@ export interface Prenda {
   temporada: string[]
   ocasiones: string[]
   descripcion: string | null
+  foto_etiqueta: string | null
+  composicion: Fibra[] | null
+  cuidado: Cuidado | null
   ultimo_uso: string | null
   veces_usada: number
+}
+
+export interface Fibra {
+  fibra: string
+  porcentaje: number | null
+}
+
+export interface Cuidado {
+  simbolos?: string[]
+  lavado?: 'maquina' | 'mano' | 'no_lavar' | null
+  temperatura_max?: number | null
+  blanqueador?: string | null
+  secadora?: string | null
+  secado?: string | null
+  planchado?: string | null
+  tintoreria?: string | null
+  notas?: string
+}
+
+export interface Simbolo {
+  codigo: string
+  grupo: 'lavado' | 'blanqueador' | 'secadora' | 'secado' | 'planchado' | 'tintoreria'
+  descripcion: string
+}
+
+export interface OpcionSlot {
+  prenda: Prenda
+  score: number
+  razones: string[]
+}
+
+export interface Slot {
+  slot: Categoria
+  opcional: boolean
+  fija: number | null
+  opciones: OpcionSlot[]
+}
+
+export interface ArmadoOutfit {
+  base: Prenda
+  slots: Slot[]
+}
+
+export interface Outfit {
+  id: number
+  nombre: string | null
+  ocasion: string | null
+  prendas: Prenda[]
+  created_at: string
+}
+
+export interface Carga {
+  nombre: string
+  tipo: 'maquina' | 'mano' | 'tintoreria' | 'sin_info'
+  temperatura: number | null
+  ciclo: 'normal' | 'delicado' | null
+  consejo: string
+  prendas: { id: number; subcategoria: string | null; categoria: Categoria; foto: string; avisos: string[] }[]
 }

@@ -6,11 +6,12 @@ Client for the [Guardaropa](https://github.com/AlbertQu1/Guardaropa) FastAPI bac
 
 ## Screens
 
-- **Clóset** — your wardrobe as a photo grid, filterable by category (tops, bottoms, shoes, jackets, accessories). Tap a piece to see how often you've worn it, edit its tags, or remove it. Pieces unworn for 60+ days are flagged.
+- **Clóset** — your wardrobe as a photo grid, filterable by category. Tap a piece to see how often you've worn it, edit its tags, start an outfit from it, or record its **care**: snap the inside label and Stylo reads the fabric composition and the ISO laundry symbols (you can correct them). Pieces unworn for 60+ days are flagged.
 - **Agregar** (center **+** button) — take a photo or pick one from the gallery; the backend removes the background and suggests category, colors, formality, weather and occasions. Nothing is saved until you confirm or correct the tags.
-- **Outfit** — *coming soon:* pick a base piece and swipe through matching shirts, shoes, etc., or ask for an outfit in plain language.
+- **Outfit** — pick a base piece and swipe through ranked options for each slot (top, bottom, shoes, layer, accessory), with a live preview of the look and the reason behind each suggestion. Pin what you like and the rest is re-suggested. "Me lo puse hoy" logs the outfit as worn, which feeds rotation.
+- **Lavandería** (from Clóset) — select what you're about to wash and get it split into compatible loads (whites/lights, darks, colors, delicates, hand wash, dry clean) with max temperature and per-piece warnings.
+- **Olvidadas** — pieces you haven't worn in 60+ days and pieces you've never worn; tap one to build an outfit around it.
 - **Tienda** — *coming soon:* photograph something in a store and see what it goes with and whether you already own something similar.
-- **Olvidadas** — *coming soon:* pieces you haven't worn lately, with outfit ideas to bring them back.
 
 Follows the phone's light/dark mode automatically.
 

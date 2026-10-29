@@ -25,7 +25,7 @@ function Chips({ opciones, valor, onChange }: { opciones: string[]; valor: strin
             key={o}
             type="button"
             onClick={() => onChange(activo ? valor.filter((x) => x !== o) : [...valor, o])}
-            className={`rounded-full border px-4 py-2 text-sm capitalize transition ${
+            className={`rounded-full border px-4 py-2 text-sm first-letter:uppercase transition ${
               activo ? 'border-primary bg-primary text-primary-foreground' : 'bg-card text-muted-foreground'
             }`}
           >
