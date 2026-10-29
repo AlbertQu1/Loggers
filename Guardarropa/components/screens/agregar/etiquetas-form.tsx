@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { AJUSTES, CATEGORIAS, OCASIONES, TEMPORADAS } from '@/lib/categorias'
 import { obtenerTallas, type EtiquetasPrenda } from '@/services/api/prendas'
-import { TallaInput } from '@/components/common/talla-input'
+import { TallaInput, usaMedidas } from '@/components/common/talla-input'
 import type { Categoria, ResumenTallas } from '@/types'
 
 const input =
@@ -100,8 +100,10 @@ export function EtiquetasForm({ valor, onChange }: { valor: EtiquetasPrenda; onC
         </datalist>
       </Campo>
       <TallaInput
-        key={valor.categoria}
-        categoria={valor.categoria as Categoria} valor={valor.talla}
+        // al cambiar el tipo (ej. de "playera" a "camisa de vestir") se recalcula el modo
+        key={`${valor.categoria}-${usaMedidas(valor.categoria as Categoria, valor.subcategoria, valor.formalidad)}`}
+        categoria={valor.categoria as Categoria} subcategoria={valor.subcategoria} formalidad={valor.formalidad}
+        valor={valor.talla}
         onChange={(v) => set('talla', v)} sugerencias={tallasCategoria}
       />
       <div className="space-y-1.5">

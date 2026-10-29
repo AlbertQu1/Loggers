@@ -13,6 +13,25 @@ export const MEDIDAS: Partial<Record<Categoria, [string, string, string, string]
   bottom: ['Cintura y largo', 'Cintura', 'Largo', 'ej. 32'],
 }
 
+const norm = (t: string | null) => (t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
+/**
+ * ¿Esta prenda se compra por dos medidas?
+ * - 'si': camisa de vestir (formal) o saco/blazer → arranca en medidas
+ * - 'opcional': otras camisas y pantalones → talla normal, con la opción a la mano
+ * - 'no': playeras, polos, sudaderas, suéteres, chamarras casuales…
+ */
+export function usaMedidas(categoria: Categoria, subcategoria: string | null, formalidad: number | null): 'si' | 'opcional' | 'no' {
+  const sub = norm(subcategoria)
+  if (categoria === 'top') {
+    if (!/camisa/.test(sub) || /playera|polo|t-?shirt/.test(sub)) return 'no'
+    return /vestir/.test(sub) || (formalidad ?? 0) >= 4 ? 'si' : 'opcional'
+  }
+  if (categoria === 'chamarra') return /saco|blazer|traje/.test(sub) ? 'si' : 'no'
+  if (categoria === 'bottom') return 'opcional'
+  return 'no'
+}
+
 /** "15.5/32-33" en una camisa -> "Cuello 15.5 · Manga 32-33". */
 export function formatoTalla(categoria: Categoria, talla: string | null) {
   if (!talla) return ''
@@ -22,14 +41,19 @@ export function formatoTalla(categoria: Categoria, talla: string | null) {
   return talla
 }
 
-export function TallaInput({ categoria, valor, onChange, sugerencias = [] }: {
+export function TallaInput({ categoria, subcategoria, formalidad, valor, onChange, sugerencias = [] }: {
   categoria: Categoria
+  subcategoria: string | null
+  formalidad: number | null
   valor: string | null
   onChange: (v: string | null) => void
   sugerencias?: string[]
 }) {
-  const medidas = MEDIDAS[categoria]
-  const [porMedidas, setPorMedidas] = useState(() => !!medidas && (valor ?? '').includes('/'))
+  const yaTiene = (valor ?? '').includes('/')
+  const modo = usaMedidas(categoria, subcategoria, formalidad)
+  // si ya trae medidas guardadas se respetan aunque el tipo no las pida
+  const medidas = modo !== 'no' || yaTiene ? MEDIDAS[categoria] : undefined
+  const [porMedidas, setPorMedidas] = useState(() => !!medidas && (yaTiene || (!valor && modo === 'si')))
   const usarMedidas = !!medidas && porMedidas
   const [a, b] = (valor ?? '').split('/')
 
